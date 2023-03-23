@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
+use App\Services\UserService;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,40 +15,58 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 
+
 ini_set('memory_limit', '256M');
 
 class UserController extends AbstractController
 {
+    private $validator;
+    private $em;
+    
+    public function __construct(ValidatorInterface $validator, EntityManagerInterface $entitymanager)
+    {
+        $this->validator = $validator;
+        $this->em = $entitymanager;
+    }
+
     #[Route('/user/registration', name: 'app_user_create', methods: 'POST')]
-    public function registration(ValidatorInterface $validator, Request $request, EntityManagerInterface $entityManager,
+    public function registration(Request $request,
+    UserRepository $userRepository,
     UserPasswordHasherInterface $passwordHasher) : JsonResponse
     {
         try {
+
+            $user = $userRepository->findBy(
+                array('email' => $request->get('email'))
+            );
+    
+            if ($user) {
+                throw new Exception('El usuario ya existe');
+            }
 
             $user = new User();
             $user->setName($request->get('name'));
             $user->setSurname($request->get('surname'));
             $user->setEmail($request->get('email'));
+            $user->setPassword($request->get('password'));
             $user->setRoles(["USER"]);
 
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $request->get('password')
-            );
-            $user->setPassword($hashedPassword);
-            
-            $errors = $validator->validate($user);
-            
+            $errors = $this->validator->validate($user);
+
             if (count($errors) > 0) {
-                return $this->json(['data' => (string) $errors], 404);
+                throw new Exception( (string) $errors);
             }
 
-            $entityManager->persist($user);
+            $userService = new UserService($this->em);
 
-            $entityManager->flush();
-           
+            $user = $userService->register($user, $passwordHasher);
+
+            if (!$user) {
+                throw new Exception('Ha habido un error al crear el usuario');
+            }
+
             return $this->json([
-                'data' => 'Usuario registrado correctamente',
+                'data' => 'Usuario registrado correctamente '.$user,
             ], 200);
 
         } catch (Exception $e) {
