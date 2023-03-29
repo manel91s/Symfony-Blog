@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entity\Mailer;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,25 +12,32 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserService {
     
-    private $repository;
+    private $userRepository;
 
-    public function __construct(EntityManagerInterface $repository) 
+    public function __construct(UserRepository $userRepository) 
     {
-        $this->repository = $repository;
+        $this->userRepository = $userRepository;
     }
 
-    public function register(User $user, UserPasswordHasherInterface $passwordHasher) : User
+    public function hassPassword(User $user, UserPasswordHasherInterface $passwordHasher) : String
     {
         $hashedPassword = $passwordHasher->hashPassword(
             $user,
             $user->getPassword()
         );
-        $user->setPassword($hashedPassword);
-      
-        $this->repository->persist($user);
-        $this->repository->flush();
-        
-        return $user;
+
+        return $hashedPassword;
     }
 
+    public function generateToken() : string
+    {
+        return sha1(random_bytes(12));
+    }
+
+    public function sendEmail($user) 
+    {
+        $mailer = new Mailer();
+        
+        $mailer->sendEmail($user);
+    }
 }

@@ -8,6 +8,7 @@ use App\Services\UserService;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,12 +22,12 @@ ini_set('memory_limit', '256M');
 class UserController extends AbstractController
 {
     private $validator;
-    private $em;
+    private $userRepository;
     
-    public function __construct(ValidatorInterface $validator, EntityManagerInterface $entitymanager)
+    public function __construct(ValidatorInterface $validator, UserRepository $userRepository)
     {
         $this->validator = $validator;
-        $this->em = $entitymanager;
+        $this->userRepository = $userRepository;
     }
 
     #[Route('/user/registration', name: 'app_user_create', methods: 'POST')]
@@ -36,42 +37,49 @@ class UserController extends AbstractController
     {
         try {
 
-            $user = $userRepository->findBy(
-                array('email' => $request->get('email'))
+            $userService = new UserService($userRepository);
+
+            $data = json_decode($request->getContent(), associative: true);
+            
+            if(!array_key_exists('name', $data)) {
+                throw new BadRequestException('name is mandatory', 400);
+            }
+
+            if(!array_key_exists('surname', $data)) {
+                throw new BadRequestException('surname is mandatory', 400);
+            }
+
+            if(!array_key_exists('email', $data)) {
+                throw new BadRequestException('email is mandatory', 400);
+            }
+
+            if(!array_key_exists('password', $data)) {
+                throw new BadRequestException('password is mandatory', 400);
+            }
+
+            $user = new User(
+                $data['name'],
+                $data['surname'],
+                $data['email'],
+                $data['password'],
+                ['USER']
             );
-    
-            if ($user) {
-                throw new Exception('El usuario ya existe');
-            }
+            $hashedPassword = $userService->hassPassword($user, $passwordHasher);
+            $user->setPassword($hashedPassword);
+            $user->setToken($userService->generateToken());
 
-            $user = new User();
-            $user->setName($request->get('name'));
-            $user->setSurname($request->get('surname'));
-            $user->setEmail($request->get('email'));
-            $user->setPassword($request->get('password'));
-            $user->setRoles(["USER"]);
+            $userRepository->save($user, true);
 
-            $errors = $this->validator->validate($user);
-
-            if (count($errors) > 0) {
-                throw new Exception( (string) $errors);
-            }
-
-            $userService = new UserService($this->em);
-
-            $user = $userService->register($user, $passwordHasher);
-
-            if (!$user) {
-                throw new Exception('Ha habido un error al crear el usuario');
+            if ($user->getId()) {
+                $userService->sendEmail($user);
             }
 
             return $this->json([
-                'data' => 'Usuario registrado correctamente '.$user,
-            ], 200);
+                'data' => $user->getToken(),
+            ], 201);
 
-        } catch (Exception $e) {
-
-            return $this->json(['data' => $e->getMessage()], 404);
+        } catch (BadRequestException $e) {
+            return $this->json(['data' => $e->getMessage()], $e->getCode());
         }
     }
 
