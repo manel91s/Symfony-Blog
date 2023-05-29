@@ -15,8 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-
-
 ini_set('memory_limit', '256M');
 
 class UserController extends AbstractController
@@ -36,8 +34,6 @@ class UserController extends AbstractController
     UserPasswordHasherInterface $passwordHasher) : JsonResponse
     {
         try {
-
-            $userService = new UserService($userRepository);
 
             $data = json_decode($request->getContent(), associative: true);
             
@@ -64,6 +60,9 @@ class UserController extends AbstractController
                 $data['password'],
                 ['USER']
             );
+
+            $userService = new UserService($userRepository);
+
             $hashedPassword = $userService->hassPassword($user, $passwordHasher);
             $user->setPassword($hashedPassword);
             $user->setToken($userService->generateToken());
