@@ -2,15 +2,17 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Http\DTO\RegisterRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
-use App\Services\UserService;
+use App\Services\RegisterService;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -19,62 +21,26 @@ ini_set('memory_limit', '256M');
 
 class UserController extends AbstractController
 {
-    private $validator;
-    private $userRepository;
-    
-    public function __construct(ValidatorInterface $validator, UserRepository $userRepository)
-    {
-        $this->validator = $validator;
-        $this->userRepository = $userRepository;
-    }
-
     #[Route('/user/registration', name: 'app_user_create', methods: 'POST')]
-    public function registration(Request $request,
-    UserRepository $userRepository,
-    UserPasswordHasherInterface $passwordHasher) : JsonResponse
+    public function registration(RegisterRequest $registerRequest,
+    RegisterService $registerService
+    ) : JsonResponse
     {
         try {
-
-            $data = json_decode($request->getContent(), associative: true);
             
-            if(!array_key_exists('name', $data)) {
-                throw new BadRequestException('name is mandatory', 400);
+            if($registerService->isUserRegistered($registerRequest)){
+                throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
             }
 
-            if(!array_key_exists('surname', $data)) {
-                throw new BadRequestException('surname is mandatory', 400);
+            $user = $registerService->registerUser($registerRequest);
+
+            if(!$user) {
+                throw new BadRequestException("Habido un error al registrar el usuario", Response::HTTP_BAD_REQUEST);
             }
-
-            if(!array_key_exists('email', $data)) {
-                throw new BadRequestException('email is mandatory', 400);
-            }
-
-            if(!array_key_exists('password', $data)) {
-                throw new BadRequestException('password is mandatory', 400);
-            }
-
-            $user = new User(
-                $data['name'],
-                $data['surname'],
-                $data['email'],
-                $data['password'],
-                ['USER']
-            );
-
-            $userService = new UserService($userRepository);
-
-            $hashedPassword = $userService->hassPassword($user, $passwordHasher);
-            $user->setPassword($hashedPassword);
-            $user->setToken($userService->generateToken());
-
-            $userRepository->save($user, true);
-
-            if ($user->getId()) {
-                $userService->sendEmail($user);
-            }
-
+            
             return $this->json([
-                'data' => $user->getToken(),
+                'token' => $user->getToken(),
+                'msg' => ''
             ], 201);
 
         } catch (BadRequestException $e) {
