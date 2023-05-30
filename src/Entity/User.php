@@ -55,8 +55,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_registration = null;
 
-    public function __construct( string $name, string $surname, string $email, string  $password, array $roles)
-    {
+    public function __construct(string $name, string $surname, string $email, string  $password, array $roles)
+    {   
         $this->name = $name;
         $this->surname = $surname;
         $this->email = $email;

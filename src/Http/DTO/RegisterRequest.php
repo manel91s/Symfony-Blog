@@ -6,21 +6,38 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RegisterRequest implements RequestDTO
 {
+    /**
+     * @Assert\NotBlank()
+     */
     private ?string $name;
+    /**
+     * @Assert\NotBlank()
+     */
+    private ?string $surname;
+    /**
+     * @Assert\NotBlank()
+     */
     private ?string $email;
+    /**
+     * @Assert\NotBlank()
+     */
     private ?string $password;
     public function __construct(Request $request)
     {
-        $data = json_decode($request->getContent(), true);
-
-        $this->name = $data['name'] ?? null;
-        $this->email = $data['email'] ?? null;
-        $this->password = $data['password'] ?? null;
+        $this->name = $request->request->get('name');
+        $this->surname = $request->request->get('surname');
+        $this->email = $request->request->get('email');
+        $this->password = $request->request->get('password');
     }
 
     public function getName(): ?string
     {
         return $this->name;
+    }
+
+    public function getSurname(): ?string
+    {
+        return $this->surname;
     }
 
     public function getEmail(): ?string

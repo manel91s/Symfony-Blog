@@ -13,10 +13,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class RequestArgumentResolver implements ArgumentValueResolverInterface
 {
     private ValidatorInterface $validator;
+    private RequestBodyTransformer $requestBodyTransformer;
 
-    public function __construct(ValidatorInterface $validator)
+    public function __construct(ValidatorInterface $validator, RequestBodyTransformer $requestBodyTransformer)
     {
         $this->validator = $validator;
+        $this->requestBodyTransformer = $requestBodyTransformer;
     }
 
     public function supports(Request $request, ArgumentMetadata $argument): bool
@@ -33,6 +35,7 @@ class RequestArgumentResolver implements ArgumentValueResolverInterface
     public function resolve(Request $request, ArgumentMetadata $argument): \Generator
     {
         $class = $argument->getType();
+        $this->requestBodyTransformer->transform($request);
         $dto = new $class($request);
 
         $errors = $this->validator->validate($dto);

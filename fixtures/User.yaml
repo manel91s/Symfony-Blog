@@ -1,0 +1,17 @@
+App\Entity\User:
+  User_0:
+    __construct:
+      name: Peter
+      surname: andPeter
+      email: peter@api.com
+      password: <word()>
+      roles: [USER]
+  User_1:
+    __construct:
+      name: ManelTest
+      surname: Aguilera
+      email: manel@api.com
+      password: <word()>
+      roles: [ADMIN]
+
+      
