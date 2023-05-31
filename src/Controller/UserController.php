@@ -1,13 +1,16 @@
 <?php
 namespace App\Controller;
 
+use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
+
 use App\Http\DTO\RegisterRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
 use App\Services\RegisterService;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,7 +34,6 @@ class UserController extends AbstractController
             if($registerService->isUserRegistered($registerRequest)){
                 throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
             }
-
             $user = $registerService->registerUser($registerRequest);
 
             if(!$user) {
@@ -40,7 +42,7 @@ class UserController extends AbstractController
             
             return $this->json([
                 'token' => $user->getToken(),
-                'msg' => ''
+                'msg' => 'La cuenta de usuario se ha creado correctamente'
             ], 201);
 
         } catch (BadRequestException $e) {
@@ -49,18 +51,15 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/login', name: 'app_user')]
-    public function login(Request $request, UserRepository $UserRepository, JWTEncoderInterface $jwtEncoder)
+    public function login(Request $request, UserRepository $UserRepository, JWTEncoderInterface $jwtEncoder, JWTDecodedEvent $event)
     : JsonResponse
     {
         try {
 
-            $requestToken = $request->headers->get('authorization');
-
-            $tokenDecode = $jwtEncoder->decode(substr($request->headers->get('authorization'), 6, strlen($requestToken)));
-
-            $user = $UserRepository->findOneBy(
-                array('email' => $tokenDecode['username'])
-            );
+            $jwtDecodedListener = new JWTDecodedListener();
+            
+            $payload = $jwtDecodedListener->onJWTDecoded($event);
+           
 
             if (!$user) {
                 throw new Exception("Usuario no encontrado");

@@ -4,6 +4,7 @@ use App\Entity\User;
 use App\Services\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
+use Hautelook\AliceBundle\PhpUnit\RecreateDatabaseTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -11,8 +12,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class UserControllerTest extends WebTestCase {
-
+class UserControllerTest extends WebTestCase 
+{
+    use RecreateDatabaseTrait;
     private const ENDPOINT  = '/api/user/registration';
 
     private static ?KernelBrowser $client = null;
@@ -31,7 +33,6 @@ class UserControllerTest extends WebTestCase {
 
     public function testRegisterUser(): void
     {
-        
         $payload = [
             'name' => 'Manel',
             'surname' => 'Aguilera',

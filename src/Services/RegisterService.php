@@ -46,7 +46,14 @@ class RegisterService {
         ]);
     }
 
-    public function hashPassword(User $user) : string
+    public function sendEmail($user) 
+    {
+        $mailer = new Mailer();
+        
+        $mailer->sendEmail($user);
+    }
+
+    private function hashPassword(User $user) : string
     {
         $hashedPassword = $this->passwordHasher->hashPassword(
             $user,
@@ -56,16 +63,10 @@ class RegisterService {
         return $hashedPassword;
     }
 
-    public function generateToken() : string
+    private function generateToken() : string
     {
         return sha1(random_bytes(12));
     }
 
-    public function sendEmail($user) 
-    {
-        $mailer = new Mailer();
-        
-        $mailer->sendEmail($user);
-    }
 
 }

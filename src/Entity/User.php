@@ -64,30 +64,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = $roles;
     }
 
-    public static function loadValidatorMetadata(ClassMetadata $metadata)
-    {
-       
-        $metadata->addPropertyConstraint('name', new NotBlank([
-            'message' => 'user.name.not_blank'
-        ]));
-
-        $metadata->addPropertyConstraint('surname', new NotBlank([
-            'message' => 'user.email.not_blank'
-        ]));
-
-        $metadata->addPropertyConstraint('email', new NotBlank([
-            'message' => 'user.surname.not_blank'
-        ]));
-
-        $metadata->addPropertyConstraint('email', new Email([
-            'message' => 'user.email.email'
-        ]));
-
-        $metadata->addPropertyConstraint('password', new NotBlank([
-            'message' => 'user.password.not_blank'
-        ]));
-    }
-
     public function getId(): ?int
     {
         return $this->id;

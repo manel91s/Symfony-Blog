@@ -3,24 +3,17 @@
 namespace App\Http\DTO;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class RegisterRequest implements RequestDTO
 {
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     private ?string $name;
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     private ?string $surname;
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     private ?string $email;
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     private ?string $password;
     public function __construct(Request $request)
     {

@@ -6,12 +6,12 @@ App\Entity\User:
       email: peter@api.com
       password: <word()>
       roles: [USER]
-  User_1:
+  User_{1..5}:
     __construct:
-      name: ManelTest
-      surname: Aguilera
-      email: manel@api.com
+      name: <name()>
+      surname: <name()>
+      email: <email()>
       password: <word()>
-      roles: [ADMIN]
+      roles: [USER]
 
       
