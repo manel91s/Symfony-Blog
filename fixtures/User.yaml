@@ -1,11 +1,11 @@
 App\Entity\User:
   User_0:
     __construct:
-      name: Peter
-      surname: andPeter
-      email: peter@api.com
-      password: <word()>
-      roles: [USER]
+      name: Manel
+      surname: Aguilera Martinez
+      email: maneliko2@msn.com
+      password: maneliko
+      roles: [ADMIN]
   User_{1..5}:
     __construct:
       name: <name()>
@@ -13,5 +13,3 @@ App\Entity\User:
       email: <email()>
       password: <word()>
       roles: [USER]
-
-      

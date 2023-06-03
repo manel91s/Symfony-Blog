@@ -23,7 +23,7 @@ class RegisterService
     {
         $this->userRepository = $userRepository;
         $this->passwordHasher = $passwordHasher;
-        $userService = new UserService($this->userRepository);
+        $this->userService = new UserService($this->userRepository);
     }
 
     /**

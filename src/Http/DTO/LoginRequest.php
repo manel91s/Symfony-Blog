@@ -9,10 +9,12 @@ class LoginRequest implements RequestDTO
 {
     #[Assert\NotBlank]
     private ?string $email;
+
     #[Assert\NotBlank]
     private ?string $password;
-    private ?string $authorizationHeader;
 
+    #[Assert\NotBlank]
+    private ?string $authorizationHeader;
     public function __construct(Request $request)
     {
         $this->email = $request->request->get('email');

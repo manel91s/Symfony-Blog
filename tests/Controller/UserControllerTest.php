@@ -10,8 +10,7 @@ class UserControllerTest extends WebTestCase
 {
     use RecreateDatabaseTrait;
     private const ENDPOINT  = '/api/user/registration';
-
-    private static ?KernelBrowser $client = null;
+       private static ?KernelBrowser $client = null;
 
 
     public function setUp(): void
@@ -117,4 +116,5 @@ class UserControllerTest extends WebTestCase
 
         self::assertEquals(JsonResponse::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
+
 }
