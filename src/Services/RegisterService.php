@@ -11,18 +11,26 @@ use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class RegisterService {
-    
-    private $userRepository;
-    private $passwordHasher;
+class RegisterService
+{
 
-    public function __construct(UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher) 
+    private UserRepository $userRepository;
+    private UserPasswordHasherInterface $passwordHasher;
+
+    private $userService;
+
+    public function __construct(UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher)
     {
         $this->userRepository = $userRepository;
         $this->passwordHasher = $passwordHasher;
+        $userService = new UserService($this->userRepository);
     }
 
-    public function registerUser(RegisterRequest $request) : User
+    /**
+     * Registering the user
+     * @return User
+     */
+    public function registerUser(RegisterRequest $request): User
     {
         $user = new User(
             $request->getName(),
@@ -39,21 +47,31 @@ class RegisterService {
         return $user;
     }
 
-    public function isUserRegistered(RegisterRequest $request) : ?User
+    /**
+     * Check if the user is already registered
+     * @return User|null
+     */
+    public function isUserRegistered(RegisterRequest $request): ?User
     {
-        return $this->userRepository->findOneBy([
-            'email' => $request->getEmail()
-        ]);
+        return $this->userService->checkUser($request->getEmail());
     }
 
-    public function sendEmail($user) 
+    /**
+     * Send the email to the user
+     * @return void
+     */
+    public function sendEmail($user)
     {
         $mailer = new Mailer();
-        
+
         $mailer->sendEmail($user);
     }
 
-    private function hashPassword(User $user) : string
+    /**
+     * Hashing the password
+     * @return string
+     */
+    private function hashPassword(User $user): string
     {
         $hashedPassword = $this->passwordHasher->hashPassword(
             $user,
@@ -63,10 +81,12 @@ class RegisterService {
         return $hashedPassword;
     }
 
-    private function generateToken() : string
+    /**
+     * Generate a token
+     * @return string
+     */
+    private function generateToken(): string
     {
         return sha1(random_bytes(12));
     }
-
-
 }

@@ -52,9 +52,12 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/login', name: 'app_user')]
-    public function login(LoginRequest $loginRequest, UserRepository $UserRepository, JWTEncoderInterface $jwtEncoder, UserPasswordHasherInterface $passwordHasher
-    ): JsonResponse
-    {
+    public function login(
+        LoginRequest $loginRequest,
+        UserRepository $UserRepository,
+        JWTEncoderInterface $jwtEncoder,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
         try {
 
             $loginService = new LoginService($UserRepository, $jwtEncoder, $passwordHasher);
@@ -76,4 +79,3 @@ class UserController extends AbstractController
         }
     }
 }
-
