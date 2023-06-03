@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Services;
+
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\UserNotFoundException;
@@ -14,14 +16,10 @@ class UserService
         $this->userRepository = $userRepository;
 
     }
-    public function checkUser(string $email): User
+    public function checkUser(string $email): ?User
     {
-       
-        if (null === $user = $this->userRepository->findOneBy(['email' => $email])) {
 
-            throw new NotFoundHttpException('La dirección email no existe');
-        }
-
-        return $user;
+        return $this->userRepository->findOneByEmail($email);
     }
-}
+
+    }

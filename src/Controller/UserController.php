@@ -1,12 +1,14 @@
 <?php
+
 namespace App\Controller;
 
 use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
-
+use App\Http\DTO\LoginRequest;
 use App\Http\DTO\RegisterRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
+use App\Services\LoginService;
 use App\Services\RegisterService;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
@@ -25,63 +27,53 @@ ini_set('memory_limit', '256M');
 class UserController extends AbstractController
 {
     #[Route('/user/registration', name: 'app_user_create', methods: 'POST')]
-    public function registration(RegisterRequest $registerRequest,
-    RegisterService $registerService
-    ) : JsonResponse
-    {
+    public function registration(
+        RegisterRequest $registerRequest,
+        RegisterService $registerService
+    ): JsonResponse {
         try {
-            
-            if($registerService->isUserRegistered($registerRequest)){
+
+            if ($registerService->isUserRegistered($registerRequest)) {
                 throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
             }
             $user = $registerService->registerUser($registerRequest);
 
-            if(!$user) {
+            if (!$user) {
                 throw new BadRequestException("Habido un error al registrar el usuario", Response::HTTP_BAD_REQUEST);
             }
-            
+
             return $this->json([
                 'token' => $user->getToken(),
                 'msg' => 'La cuenta de usuario se ha creado correctamente'
             ], 201);
-
         } catch (BadRequestException $e) {
             return $this->json(['data' => $e->getMessage()], $e->getCode());
         }
     }
 
     #[Route('/user/login', name: 'app_user')]
-    public function login(Request $request, UserRepository $UserRepository, JWTEncoderInterface $jwtEncoder, JWTDecodedEvent $event)
-    : JsonResponse
+    public function login(LoginRequest $loginRequest, UserRepository $UserRepository, JWTEncoderInterface $jwtEncoder, UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse
     {
         try {
 
-            $jwtDecodedListener = new JWTDecodedListener();
-            
-            $payload = $jwtDecodedListener->onJWTDecoded($event);
-           
+            $loginService = new LoginService($UserRepository, $jwtEncoder, $passwordHasher);
 
-            if (!$user) {
-                throw new Exception("Usuario no encontrado");
-            }
+            $user = $loginService->login($loginRequest);
 
-            $response = array(
+            return $this->json([
                 'id' => $user->getId(),
                 'name' => $user->getName(),
                 'surname' => $user->getSurname(),
-                'rol' => $user->getRoles()
-            );
-
-            return $this->json([
-                'data' => $response
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles()[0],
             ], 200);
+        } catch (Exception $e) {
 
-        } catch(Exception $e) {
-            
             return $this->json([
                 'data' => $e->getMessage(),
             ], 404);
-
         }
     }
 }
+
