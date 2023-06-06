@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -29,7 +30,8 @@ class UserController extends AbstractController
     #[Route('/user/registration', name: 'app_user_create', methods: 'POST')]
     public function registration(
         RegisterRequest $registerRequest,
-        RegisterService $registerService
+        RegisterService $registerService,
+        MailerInterface $mailer
     ): JsonResponse {
         try {
 
@@ -41,6 +43,8 @@ class UserController extends AbstractController
             if (!$user) {
                 throw new BadRequestException("Habido un error al registrar el usuario", Response::HTTP_BAD_REQUEST);
             }
+
+            $registerService->sendEmail($mailer, $user);
 
             return $this->json([
                 'token' => $user->getToken(),

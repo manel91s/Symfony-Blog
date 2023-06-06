@@ -15,6 +15,9 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\Controller\UserController:
         arguments: ['@validator', '@entitymanager']
+    App\Services\RegisterService:
+         arguments: 
+            $mailer: '@Symfony\Component\Mailer\MailerInterface'
     App\:
         resource: '../src/'
         exclude:

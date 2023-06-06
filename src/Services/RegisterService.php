@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use App\Entity\Mailer;
 use App\Entity\User;
 use App\Http\DTO\RegisterRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class RegisterService
@@ -60,11 +62,15 @@ class RegisterService
      * Send the email to the user
      * @return void
      */
-    public function sendEmail($user)
+    public function sendEmail(MailerInterface $mailer, User $user): void
     {
-        $mailer = new Mailer();
+        $mailer = new MailerService($mailer);
 
-        $mailer->sendEmail($user);
+        try {
+            $mailer->sendEmail($user);
+        } catch (BadRequestException $e) {
+            throw new BadRequestException("Error al enviar el email", Response::HTTP_BAD_REQUEST);
+        }
     }
 
     /**
