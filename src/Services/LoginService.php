@@ -51,6 +51,10 @@ class LoginService
             throw new BadRequestException("Contraseña incorrecta", Response::HTTP_UNAUTHORIZED);
         }
 
+        if($user && !$user->isConfirm()) {
+            throw new BadRequestException("La cuenta no está activada", Response::HTTP_UNAUTHORIZED);
+        }
+
         return $user;
     }
 
