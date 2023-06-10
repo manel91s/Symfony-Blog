@@ -6,9 +6,13 @@ use App\Entity\User;
 use App\Http\DTO\RegisterRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Faker\Container\ContainerInterface;
+use Faker\Core\File;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -18,14 +22,18 @@ class RegisterService
 
     private UserRepository $userRepository;
     private UserPasswordHasherInterface $passwordHasher;
+    private UserService $userService;
+    private EntityManagerInterface $entityManager;
+    private $projectDir;
 
-    private $userService;
 
-    public function __construct(UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, KernelInterface $kernel)
     {
+        $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
         $this->passwordHasher = $passwordHasher;
         $this->userService = new UserService($this->userRepository);
+        $this->projectDir = $kernel->getProjectDir();
     }
 
     /**
@@ -34,17 +42,37 @@ class RegisterService
      */
     public function registerUser(RegisterRequest $request): User
     {
-        $user = new User(
-            $request->getName(),
-            $request->getSurname(),
-            $request->getEmail(),
-            $request->getPassword(),
-            ['USER']
-        );
-        $user->setPassword($this->hashPassword($user));
-        $user->setToken($this->generateToken());
 
-        $this->userRepository->save($user, true);
+        $this->entityManager->beginTransaction();
+
+        try {
+
+            if ($this->isUserRegistered($request)) {
+                throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
+            }
+
+            $fileName = $this->uploadAvatar($request->getFile());
+                        
+            $user = new User(
+                $request->getName(),
+                $request->getSurname(),
+                $request->getEmail(),
+                $request->getPassword(),
+                ['USER']
+            );
+            $user->setPassword($this->hashPassword($user));
+            $user->setToken($this->generateToken());
+            $user->setAvatar($fileName);
+
+            $this->userRepository->save($user, true);
+
+            $this->entityManager->commit();
+        } catch (BadRequestException $e) {
+
+            $this->entityManager->rollback();
+
+            throw new BadRequestException($e->getMessage(), $e->getCode());
+        }
 
         return $user;
     }
@@ -94,5 +122,30 @@ class RegisterService
     private function generateToken(): string
     {
         return sha1(random_bytes(12));
+    }
+
+    /**
+     * Upload the avatar
+     * @return string
+     */
+    public function uploadAvatar(UploadedFile $file): string
+    {
+
+        $fileUploader = new FileUploader($this->projectDir . '/public/uploads/avatar');
+
+        try {
+
+            if ($file->getSize() > 1000000) {
+                throw new BadRequestException("El archivo es demasiado grande", Response::HTTP_BAD_REQUEST);
+            }
+
+            if ($file->getMimeType() !== 'image/jpeg' && $file->getMimeType() !== 'image/png') {
+                throw new BadRequestException("El archivo no es una imagen", Response::HTTP_BAD_REQUEST);
+            }
+        } catch (BadRequestException $e) {
+            throw new BadRequestException($e->getMessage(), $e->getCode());
+        }
+
+        return $fileUploader->upload($file);
     }
 }

@@ -8,6 +8,7 @@ use App\Http\DTO\LoginRequest;
 use App\Http\DTO\RegisterRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
+use App\Services\FileUploader;
 use App\Services\LoginService;
 use App\Services\RegisterService;
 use Exception;
@@ -20,7 +21,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 ini_set('memory_limit', '256M');
@@ -34,18 +34,10 @@ class UserController extends AbstractController
         MailerInterface $mailer
     ): JsonResponse {
         try {
-
-            if ($registerService->isUserRegistered($registerRequest)) {
-                throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
-            }
+            
             $user = $registerService->registerUser($registerRequest);
-
-            if (!$user) {
-                throw new BadRequestException("Habido un error al registrar el usuario", Response::HTTP_BAD_REQUEST);
-            }
-
             $registerService->sendEmail($mailer, $user);
-
+            
             return $this->json([
                 'token' => $user->getToken(),
                 'msg' => 'La cuenta de usuario se ha creado correctamente'
