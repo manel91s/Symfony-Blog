@@ -50,9 +50,7 @@ class RegisterService
             if ($this->isUserRegistered($request)) {
                 throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
             }
-
-            $fileName = $this->uploadAvatar($request->getFile());
-                        
+ 
             $user = new User(
                 $request->getName(),
                 $request->getSurname(),
@@ -62,7 +60,11 @@ class RegisterService
             );
             $user->setPassword($this->hashPassword($user));
             $user->setToken($this->generateToken());
-            $user->setAvatar($fileName);
+
+            if ($request->getFile()) {
+                $fileName = $this->uploadAvatar($request->getFile());
+                $user->setAvatar($fileName);
+            }
 
             $this->userRepository->save($user, true);
 

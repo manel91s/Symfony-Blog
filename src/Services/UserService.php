@@ -18,8 +18,11 @@ class UserService
     }
     public function checkUser(string $email): ?User
     {
-
         return $this->userRepository->findOneByEmail($email);
     }
 
+    public function checkUserByToken(string $token): ?User
+    {
+        return $this->userRepository->findOneBy(['token' => $token]);
     }
+}

@@ -17,7 +17,7 @@ class RegisterRequest implements RequestDTO
     #[Assert\NotBlank]
     private ?string $password;
 
-    private UploadedFile $file;
+    private ?UploadedFile $file;
     
     public function __construct(Request $request)
     {

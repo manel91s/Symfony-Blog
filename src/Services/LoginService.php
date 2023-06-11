@@ -4,17 +4,16 @@ namespace App\Services;
 
 use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
+use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\LoginRequest;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class LoginService
 {
-    private JWTDecodedListener $jwtDecodedListener;
     private UserService $userService;
     private UserRepository $userRepository;
     private JWTEncoderInterface $jwtEncoder;
@@ -94,4 +93,27 @@ class LoginService
     {
         return $this->passwordHasher->isPasswordValid($user, $plainPassword);
     }
+
+    public function activeUser(ActivateRequest $request): void
+    {
+
+        try {
+
+            $user = $this->userService->checkUserByToken($request->getToken());
+
+            if (!$user) {
+                throw new BadRequestException("El token no es válido", Response::HTTP_UNAUTHORIZED);
+            }
+
+            $user->setToken(null);
+            $user->setConfirm(true);
+            
+            $this->userRepository->save($user, true);
+            
+        }catch(BadRequestException $e) {
+            throw new BadRequestException("Error al activar la cuenta", Response::HTTP_UNAUTHORIZED);
+        }
+
+    }
+
 }

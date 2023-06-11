@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
+use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\LoginRequest;
 use App\Http\DTO\RegisterRequest;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +12,7 @@ use App\Repository\UserRepository;
 use App\Services\FileUploader;
 use App\Services\LoginService;
 use App\Services\RegisterService;
+use App\Services\UserService;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
@@ -47,7 +49,7 @@ class UserController extends AbstractController
         }
     }
 
-    #[Route('/user/login', name: 'app_user')]
+    #[Route('/user/login', name: 'app_user_login', methods: 'POST')]
     public function login(
         LoginRequest $loginRequest,
         UserRepository $UserRepository,
@@ -67,11 +69,28 @@ class UserController extends AbstractController
                 'email' => $user->getEmail(),
                 'roles' => $user->getRoles()[0],
             ], 200);
-        } catch (Exception $e) {
+        } catch (BadRequestException $e) {
 
             return $this->json([
                 'data' => $e->getMessage(),
             ], 404);
         }
     }
+    #[Route('/user/activate', name: 'app_user_activate', methods: 'GET')]
+    public function activation(ActivateRequest $activateRequest, LoginService $loginService)
+    {
+        try {
+            
+            $loginService->activeUser($activateRequest);
+
+            return $this->json([
+                'msg' => 'La cuenta de usuario se ha activado correctamente',
+            ], 200);
+        } catch (BadRequestException $e) {
+            return $this->json([
+                'data' => $e->getMessage(),
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+ 
 }
