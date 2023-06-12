@@ -9,6 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
 {
+    #[ORM\ManyToOne(targetEntity: "App\Entity\User", inversedBy: "posts")]
+    private User $user;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -31,11 +34,6 @@ class Post
 
     #[ORM\Column(nullable: true)]
     private ?bool $public = null;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
-     */
-    private $user;
 
     public function getId(): ?int
     {
