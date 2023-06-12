@@ -32,6 +32,11 @@ class Post
     #[ORM\Column(nullable: true)]
     private ?bool $public = null;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
+     */
+    private $user;
+
     public function getId(): ?int
     {
         return $this->id;

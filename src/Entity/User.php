@@ -55,6 +55,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_registration = null;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="user"")
+     */
+    private $posts;
+
     public function __construct(string $name, string $surname, string $email, string  $password, array $roles, string $token = null)
     {   
         $this->name = $name;
