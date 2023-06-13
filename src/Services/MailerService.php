@@ -32,13 +32,16 @@ class MailerService
             $this->mailer->send($email);  
             
         }catch(Exception $e) {
-            throw new BadRequestException("Error al enviar el email", Response::HTTP_BAD_REQUEST);
+            throw new BadRequestException($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
         
     }
 
     private function getBodyEmail(User $user): string
     {
-        return 'Bievenido a la web de Manel, para completar el registro de tu cuenta, haz click en el siguiente enlace: http://' . $_SERVER['HTTP_HOST'] . '/user/activate/' . $user->getToken();
+        if(array_key_exists('HTTP_HOST', $_SERVER)) {
+            return 'Bievenido a la web de Manel, para completar el registro de tu cuenta, haz click en el siguiente enlace: http://' . $_SERVER['HTTP_HOST'] . '/user/activate/' . $user->getToken();
+        }
+        return "Este es el email para enviar cuando se lanzan los tests";
     }
 }

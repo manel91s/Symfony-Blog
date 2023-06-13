@@ -99,7 +99,7 @@ class RegisterService
         try {
             $mailer->sendEmail($user);
         } catch (BadRequestException $e) {
-            throw new BadRequestException("Error al enviar el email", Response::HTTP_BAD_REQUEST);
+            throw new BadRequestException($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 

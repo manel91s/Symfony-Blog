@@ -12,7 +12,9 @@ class UserControllerTest extends WebTestCase
     private const ENDPOINT  = '/api/user/registration';
     private const ENDPOINT_LOGIN  = '/api/user/login';
     private const ENDPOINT_ACTIVATE  = '/api/user/activate';
+    private const ENDPOINT_CHECK  = '/api/login_check';
     private static ?KernelBrowser $client = null;
+    private string $authToken = '';
 
 
     public function setUp(): void
@@ -24,25 +26,6 @@ class UserControllerTest extends WebTestCase
             self::$client->setServerParameter('CONTENT_TYPE', 'application/json');
         }
     }
-
-    /**
-     * test the registration of a user
-     */
-    /*public function testRegisterUser(): void
-    {
-        $payload = [
-            'name' => 'Manel',
-            'surname' => 'Aguilera',
-            'email' => 'manel@api.com',
-            'password' => 'password123'
-        ];
-
-        self::$client->request(Request::METHOD_POST, self::ENDPOINT, [], [], [], json_encode($payload));
-
-        $response = self::$client->getResponse();
-
-        self::assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
-    }*/
 
     /**
      * check if the name does not arrive
@@ -177,6 +160,71 @@ class UserControllerTest extends WebTestCase
         $response = self::$client->getResponse();
 
         self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+    }
+
+    /**
+     * test the registration of a user
+     */
+    public function testRegisterUser(): void
+    {
+        $payload = [
+            'name' => 'Manel',
+            'surname' => 'Aguilera',
+            'email' => 'manel.aguilera91@gmail.com',
+            'password' => '123456'
+        ];
+
+        self::$client->request(Request::METHOD_POST, self::ENDPOINT, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
+    }
+
+
+    /**
+     * test login check to get JWT 
+     */
+    public function testLoginCheck(): void
+    {
+        $payload = [
+            'username' => 'manel.aguilera91@gmail.com',
+            'password' => '123456'
+        ];
+
+        self::$client->request(Request::METHOD_POST, self::ENDPOINT_CHECK, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        $this->authToken = json_decode($response->getContent())->token;
+
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+    }
+
+    /**
+     * Test that the user is not activated by sending the jwt by header
+     */
+    public function testLoginNoActiveUser() :void
+    {
+        $this->testLoginCheck();
+
+        self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->getAuthToken());
+
+        $payload = [
+            'email' => 'manel.aguilera91@gmail.com',
+            'password' => '123456'
+        ];
+
+        self::$client->request(Request::METHOD_POST, self::ENDPOINT_LOGIN, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_UNAUTHORIZED, $response->getStatusCode());
+    }
+
+    public function getAuthToken(): string
+    {
+        return $this->authToken;
     }
 
 }

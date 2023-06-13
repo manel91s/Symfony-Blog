@@ -73,7 +73,7 @@ class UserController extends AbstractController
 
             return $this->json([
                 'data' => $e->getMessage(),
-            ], 404);
+            ], $e->getCode());
         }
     }
     #[Route('/user/activate', name: 'app_user_activate', methods: 'GET')]
@@ -89,7 +89,7 @@ class UserController extends AbstractController
         } catch (BadRequestException $e) {
             return $this->json([
                 'data' => $e->getMessage(),
-            ], Response::HTTP_UNAUTHORIZED);
+            ], $e->getCode());
         }
     }
  

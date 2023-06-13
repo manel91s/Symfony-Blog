@@ -35,6 +35,16 @@ class Post
     #[ORM\Column(nullable: true)]
     private ?bool $public = null;
 
+    public function __construct(string $title, string $body)
+    {
+        $this->title = $title;
+        $this->body = $body;
+        $this->date_registration = new \DateTimeImmutable();
+        $this->date_update = new \DateTimeImmutable();
+        $this->public = true;
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;

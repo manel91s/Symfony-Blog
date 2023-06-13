@@ -48,7 +48,7 @@ class RegisterRequest implements RequestDTO
         return $this->password;
     }
 
-    public function getFile(): UploadedFile
+    public function getFile(): ?UploadedFile
     {
         return $this->file;
     }

@@ -8,9 +8,10 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PostController extends AbstractController
 {
-    #[Route('/post', name: 'app_post')]
+    #[Route('/posts', name: 'app_post')]
     public function index(): JsonResponse
     {
+        
         return $this->json([
             'message' => 'Welcome to your new controller!',
             'path' => 'src/Controller/PostController.php',
