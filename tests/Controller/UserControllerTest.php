@@ -221,7 +221,7 @@ class UserControllerTest extends WebTestCase
 
         self::assertEquals(JsonResponse::HTTP_UNAUTHORIZED, $response->getStatusCode());
     }
-
+    
     public function getAuthToken(): string
     {
         return $this->authToken;

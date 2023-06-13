@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Post
 {
     #[ORM\ManyToOne(targetEntity: "App\Entity\User", inversedBy: "posts")]
-    private User $user;
+    private ?User $user;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -35,15 +35,20 @@ class Post
     #[ORM\Column(nullable: true)]
     private ?bool $public = null;
 
-    public function __construct(string $title, string $body)
+    public function __construct(string $title, string $body, ?User $user = null)
     {
         $this->title = $title;
         $this->body = $body;
+        $this->user = $user;
         $this->date_registration = new \DateTimeImmutable();
         $this->date_update = new \DateTimeImmutable();
         $this->public = true;
     }
 
+    public function getUser(): User
+    {
+        return $this->user;
+    }
 
     public function getId(): ?int
     {

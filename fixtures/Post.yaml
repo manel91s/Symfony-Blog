@@ -3,3 +3,5 @@ App\Entity\Post:
     __construct:
       title: <title()>
       body: <name()>
+      user: '@User_*'
+ 

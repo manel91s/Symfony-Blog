@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\OneToMany(targetEntity: "App\Entity\Post", mappedBy: "user")]
-    private $posts;
+    private ?Post $posts;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -58,7 +58,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date_registration = null;
 
-    public function __construct(string $name, string $surname, string $email, string  $password, array $roles, string $token = null)
+    public function __construct(string $name, string $surname, string $email, string  $password, array $roles, string $token = null, ?Post $posts = null)
     {   
         $this->name = $name;
         $this->surname = $surname;
@@ -66,6 +66,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
         $this->roles = $roles;
         $this->token = $token;
+        $this->posts = $posts;
     }
 
     public function getPosts(): Post
