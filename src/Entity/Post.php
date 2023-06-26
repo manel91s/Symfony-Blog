@@ -35,6 +35,9 @@ class Post
     #[ORM\Column(nullable: true)]
     private ?bool $public = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     public function __construct(string $title, string $body, ?User $user = null)
     {
         $this->title = $title;
@@ -123,6 +126,18 @@ class Post
     public function setPublic(?bool $public): self
     {
         $this->public = $public;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }

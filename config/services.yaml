@@ -19,6 +19,9 @@ services:
         arguments: 
             $userRepository: '@Component\User\Repository\UserRepository'
             $passwordHasher: '@Component\PasswordHaser\Hasher\UserPasswordHasherinterface'
+    App\Services\PostService:
+        arguments: 
+            $postRepository: '@Component\Post\Repository\PostRepository'
     App\:
         resource: '../src/'
         exclude:

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Tests\Controller;
+
 use Hautelook\AliceBundle\PhpUnit\RecreateDatabaseTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -15,7 +17,6 @@ class UserControllerTest extends WebTestCase
     private const ENDPOINT_CHECK  = '/api/login_check';
     private static ?KernelBrowser $client = null;
     private string $authToken = '';
-
 
     public function setUp(): void
     {
@@ -165,7 +166,7 @@ class UserControllerTest extends WebTestCase
     /**
      * test the registration of a user
      */
-    public function testRegisterUser(): void
+    abstract public function testRegisterUser(): void
     {
         $payload = [
             'name' => 'Manel',

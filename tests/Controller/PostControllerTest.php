@@ -1,18 +1,20 @@
 <?php
 
+namespace App\Tests\Controller;
+
+use App\Entity\User;
 use Hautelook\AliceBundle\PhpUnit\RecreateDatabaseTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-class PostControllerTest extends WebTestCase
+class PostControllerTest extends UserCredentialsAbstractTest
 {
     use RecreateDatabaseTrait;
+    
     private const ENDPOINT  = '/api/posts';
-    private static ?KernelBrowser $client = null;
-
-
+  
     public function setUp(): void
     {
         parent::setUp();
@@ -23,13 +25,21 @@ class PostControllerTest extends WebTestCase
         }
     }
 
+    /**
+     * test gest all posts
+     */
     public function testGetPosts(): void
     {
+        $this->testRegisterUser();
+        $this->testLoginCheck();
+
+        self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->getAuthToken());
+
         self::$client->request(Request::METHOD_GET, self::ENDPOINT, [], [], [], '');
 
         $response = self::$client->getResponse();
 
-        self::assertEquals(JsonResponse::HTTP_BAD_REQUEST, $response->getStatusCode());
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
     }
 
 }

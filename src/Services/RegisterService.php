@@ -130,7 +130,7 @@ class RegisterService
      * Upload the avatar
      * @return string
      */
-    public function uploadAvatar(UploadedFile $file): string
+    private function uploadAvatar(UploadedFile $file): string
     {
 
         $fileUploader = new FileUploader($this->projectDir . '/public/uploads/avatar');
