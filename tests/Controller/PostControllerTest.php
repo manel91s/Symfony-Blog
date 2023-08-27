@@ -15,6 +15,7 @@ class PostControllerTest extends UserCredentialsAbstractTest
     
     private const ENDPOINT_POSTS  = '/api/posts';
     private const ENDPOINT_SAVE = '/api/post/save';
+    private const ENDPOINT_UPDATE = '/api/post/update';
   
     public function setUp(): void
     {
@@ -47,7 +48,11 @@ class PostControllerTest extends UserCredentialsAbstractTest
         
         self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
 
-        self::$client->request(Request::METHOD_GET, self::ENDPOINT_POSTS . '/1', [], [], [], '');
+        $parameters = [
+            'id' => '1'
+        ];
+
+        self::$client->request(Request::METHOD_GET, self::ENDPOINT_POSTS, $parameters, [], [], '');
 
         $response = self::$client->getResponse();
 
@@ -109,5 +114,25 @@ class PostControllerTest extends UserCredentialsAbstractTest
 
         self::assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
     }
+
+    public function testUpdatePost(): void
+    {  
+        $this->testLoginCheck();
+
+        self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
+        
+        $payload = [
+            'title' => 'Blog Personal Manel ACTUALIZADO',
+            'body' => 'Esto es el cuerpo del post ACTUALIZADO'
+        ];
+
+        self::$client->request(Request::METHOD_PUT, self::ENDPOINT_UPDATE . '/6', [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
+    }
+
+
 
 }

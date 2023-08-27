@@ -32,7 +32,8 @@ class PostService
         $this->projectDir = $kernel->getProjectDir();
     }
 
-    public function save(PostRequest $request) {
+    public function save(PostRequest $request): void
+    {
         
         $bearerToken = $this->jwtService->getTokenFromRequest($request);
         $payload = $this->jwtService->decodeToken($bearerToken);
@@ -46,6 +47,32 @@ class PostService
             $request->getBody(),
             $user
         );
+
+        if ($request->getImage()) {
+            $fileName = $this->uploadImage($request->getImage());
+            $post->setImage($fileName);
+        }
+        
+        $this->postRepository->save($post, true);
+    }
+
+    public function update(PostRequest $request): void
+    {
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
+
+        if(!$this->userService->checkUserById($payload['userId'])) {
+            throw new BadRequestException("Este email no está registrado", Response::HTTP_CONFLICT);
+        }
+
+        if(!$post = $this->postRepository->find($request->getId())) {
+            throw new BadRequestException(
+                "El post que intentas editar no ha sido encontrado", Response::HTTP_NOT_FOUND
+            );
+        }
+
+        $post->setTitle($request->getTitle());
+        $post->setBody($request->getBody());
 
         if ($request->getImage()) {
             $fileName = $this->uploadImage($request->getImage());
