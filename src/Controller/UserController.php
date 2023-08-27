@@ -38,7 +38,7 @@ class UserController extends AbstractController
         try {
             
             $user = $registerService->registerUser($registerRequest);
-            $registerService->sendEmail($mailer, $user);
+            //$registerService->sendEmail($mailer, $user);
             
             return $this->json([
                 'token' => $user->getToken(),

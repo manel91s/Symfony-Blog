@@ -2,7 +2,12 @@
 
 namespace App\Services;
 
+use App\Entity\Post;
+use App\Http\DTO\PostRequest;
 use App\Repository\PostRepository;
+use App\Repository\UserRepository;
+use jwtService;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,15 +16,43 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class PostService 
 {
     private PostRepository $postRepository;
+    private UserService $userService;
     private $projectDir;
-    public function __construct(PostRepository $postRepository, KernelInterface $kernel)
+    private jwtService $jwtService;
+
+    public function __construct(
+        PostRepository $postRepository,
+        UserRepository $userRepository,
+        KernelInterface $kernel,
+        JWTEncoderInterface $jwtEncoder)
     {
         $this->postRepository = $postRepository;
+        $this->userService = new UserService($userRepository);
+        $this->jwtService = new jwtService($jwtEncoder);
         $this->projectDir = $kernel->getProjectDir();
     }
 
-    public function savePost() {
+    public function save(PostRequest $request) {
+        
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
 
+        if(!$user = $this->userService->checkUserById($payload['userId'])) {
+            throw new BadRequestException("Este email no está registrado", Response::HTTP_CONFLICT);
+        }
+        
+        $post = new Post(
+            $request->getTitle(),
+            $request->getBody(),
+            $user
+        );
+
+        if ($request->getImage()) {
+            $fileName = $this->uploadImage($request->getImage());
+            $post->setImage($fileName);
+        }
+        
+        $this->postRepository->save($post, true);
     }
 
     public function getPosts(): array
@@ -43,7 +76,7 @@ class PostService
         return $arrayPosts;
     }
 
-    public function get(int $id)
+    public function get(int $id) : array
     {
         $post = $this->postRepository->find($id);
 

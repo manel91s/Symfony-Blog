@@ -4,8 +4,9 @@ namespace App\Http\DTO;
 
 use Symfony\Component\HttpFoundation\Request;
 
-interface RequestDTO
+interface RequestWithAuthorizationDTO
 {
     public function __construct(Request $request);
 
+    public function authorizationHeader();
 }

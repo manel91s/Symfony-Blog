@@ -17,7 +17,7 @@ abstract class UserCredentialsAbstractTest extends WebTestCase
     private const ENDPOINT  = '/api/user/registration';
     private const ENDPOINT_CHECK  = '/api/login_check';
     protected static ?KernelBrowser $client = null;
-    private string $authToken = '';
+    protected string $authToken = '';
 
     public function setUp(): void
     {

@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\LoginRequest;
 use App\Repository\UserRepository;
+use jwtService;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -16,14 +17,14 @@ class LoginService
 {
     private UserService $userService;
     private UserRepository $userRepository;
-    private JWTEncoderInterface $jwtEncoder;
+    private jwtService $jwtService;
     private UserPasswordHasherInterface $passwordHasher;
 
     public function __construct(UserRepository $userRepository, JWTEncoderInterface $jwtEncoder, UserPasswordHasherInterface $passwordHasher)
     {
         $this->userRepository = $userRepository;
         $this->userService = new UserService($this->userRepository);
-        $this->jwtEncoder = $jwtEncoder;
+        $this->jwtService = new jwtService($jwtEncoder);
         $this->passwordHasher = $passwordHasher;
     }
 
@@ -38,9 +39,9 @@ class LoginService
         if (!$user) {
             throw new BadRequestException("Este email no está registrado", Response::HTTP_CONFLICT);
         }
-
-        $bearerToken = $this->getTokenFromRequest($request);
-        $payload = $this->decodeToken($bearerToken);
+        
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
 
         if ($user && $user->getId() !== $payload['userId']) {
             throw new BadRequestException("Estas accediendo con un usuario incorrecto", Response::HTTP_UNAUTHORIZED);
@@ -55,34 +56,6 @@ class LoginService
         }
 
         return $user;
-    }
-
-    /**
-     * Get the token from the request
-     * @return string
-     */
-    private function getTokenFromRequest(LoginRequest $request): string
-    {
-        $authorizationHeader = $request->authorizationHeader();
-
-        if (!$authorizationHeader) {
-            throw new BadRequestException('No se encontró el encabezado de autorización', Response::HTTP_BAD_REQUEST);
-        }
-
-        if (strpos($authorizationHeader, 'Bearer ') !== 0) {
-            return new BadRequestException('El encabezado de autorización no es válido', Response::HTTP_BAD_REQUEST);
-        }
-
-        return substr($authorizationHeader, 7);
-    }
-
-    /**
-     * Decode the token
-     * @return array|null
-     */
-    private function decodeToken($token): array
-    {
-        return $this->jwtEncoder->decode($token);
     }
 
     /**

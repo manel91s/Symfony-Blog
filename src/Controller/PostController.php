@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Http\DTO\PostRequest;
 use App\Services\PostService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -10,8 +11,22 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PostController extends AbstractController
 {
+
+    #[Route('/post/save', name: 'app_post_save', methods: 'POST')]
+    public function savePost(PostRequest $request, PostService $postService): JsonResponse
+    {
+        try {
+            $postService->save($request);
+
+        } catch(BadRequestException $e) {
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
+        }
+
+        return $this->json([], JsonResponse::HTTP_CREATED);
+    }
+
     #[Route('/posts', name: 'app_post', methods: 'GET')]
-    public function index(PostService $postService): JsonResponse
+    public function getPosts(PostService $postService): JsonResponse
     {
         try {
 
@@ -21,7 +36,22 @@ class PostController extends AbstractController
                 'data' => $posts
             ], 200);
         } catch (BadRequestException $e) {
-            return $this->json(['data' => "No hay publicaciones"], $e->getCode());
+            return $this->json(['msg' => "No hay publicaciones"], $e->getCode());
+        }
+    }
+
+    #[Route('/posts/{id}', name: 'app_post_id', methods: 'GET')]
+    public function getPost(int $id, PostService $postService): JsonResponse
+    {
+        try {
+
+            $post = $postService->get($id);
+
+            return $this->json([
+                'data' => $post
+            ], 200);
+        } catch (BadRequestException $e) {
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
     }
 }

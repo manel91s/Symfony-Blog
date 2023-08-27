@@ -166,7 +166,7 @@ class UserControllerTest extends WebTestCase
     /**
      * test the registration of a user
      */
-    abstract public function testRegisterUser(): void
+    public function testRegisterUser(): void
     {
         $payload = [
             'name' => 'Manel',

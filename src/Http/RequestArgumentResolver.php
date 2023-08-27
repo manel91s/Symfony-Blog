@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\DTO\RequestDTO;
+use App\Http\DTO\RequestWithAuthorizationDTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
@@ -26,6 +27,10 @@ class RequestArgumentResolver implements ArgumentValueResolverInterface
         $reflectionClass = new \ReflectionClass($argument->getType());
 
         if($reflectionClass->implementsInterface(RequestDTO::class)) {
+            return true;
+        }
+
+        if($reflectionClass->implementsInterface(RequestWithAuthorizationDTO::class)) {
             return true;
         }
 

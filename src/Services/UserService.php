@@ -21,6 +21,11 @@ class UserService
         return $this->userRepository->findOneByEmail($email);
     }
 
+    public function checkUserById(int $id): ?User
+    {
+        return $this->userRepository->find($id);
+    }
+
     public function checkUserByToken(string $token): ?User
     {
         return $this->userRepository->findOneBy(['token' => $token]);

@@ -5,7 +5,7 @@ namespace App\Http\DTO;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class LoginRequest implements RequestDTO
+class LoginRequest implements RequestWithAuthorizationDTO
 {
     #[Assert\NotBlank]
     private ?string $email;
