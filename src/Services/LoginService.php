@@ -7,7 +7,6 @@ use App\Entity\User;
 use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\LoginRequest;
 use App\Repository\UserRepository;
-use jwtService;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -20,7 +19,11 @@ class LoginService
     private jwtService $jwtService;
     private UserPasswordHasherInterface $passwordHasher;
 
-    public function __construct(UserRepository $userRepository, JWTEncoderInterface $jwtEncoder, UserPasswordHasherInterface $passwordHasher)
+    public function __construct(
+        UserRepository $userRepository, 
+        JWTEncoderInterface $jwtEncoder, 
+        UserPasswordHasherInterface $passwordHasher
+        )
     {
         $this->userRepository = $userRepository;
         $this->userService = new UserService($this->userRepository);

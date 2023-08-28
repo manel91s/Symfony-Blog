@@ -6,6 +6,7 @@ use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
 use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\LoginRequest;
+use App\Http\DTO\ProfileRequest;
 use App\Http\DTO\RegisterRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
@@ -21,6 +22,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -33,17 +35,42 @@ class UserController extends AbstractController
     public function registration(
         RegisterRequest $registerRequest,
         RegisterService $registerService,
-        MailerInterface $mailer
     ): JsonResponse {
         try {
-            
+
             $user = $registerService->registerUser($registerRequest);
             //$registerService->sendEmail($mailer, $user);
-            
+
             return $this->json([
                 'token' => $user->getToken(),
                 'msg' => 'La cuenta de usuario se ha creado correctamente'
             ], 201);
+        } catch (BadRequestException $e) {
+            return $this->json(['data' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    #[Route('/user/update/profile', name: 'app_user_profile', methods: 'POST')]
+    public function updateProfile(
+        ProfileRequest $profileRequest,
+        UserService $userService,
+        JWTEncoderInterface $jwtEncoder,
+        KernelInterface $kernel
+    ): JsonResponse {
+        try {
+
+            $userService->setEncoder($jwtEncoder);
+            $userService->setFileUploader($kernel);
+
+            $user = $userService->updateProfile($profileRequest);
+
+            return $this->json([
+                'id' => $user->getId(),
+                'name' => $user->getName(),
+                'surname' => $user->getSurname(),
+                'email' => $user->getEmail(),
+                'avatar' => $user->getAvatar()
+            ], 200);
         } catch (BadRequestException $e) {
             return $this->json(['data' => $e->getMessage()], $e->getCode());
         }
@@ -80,7 +107,7 @@ class UserController extends AbstractController
     public function activation(ActivateRequest $activateRequest, LoginService $loginService)
     {
         try {
-            
+
             $loginService->activeUser($activateRequest);
 
             return $this->json([
@@ -92,5 +119,4 @@ class UserController extends AbstractController
             ], $e->getCode());
         }
     }
- 
 }

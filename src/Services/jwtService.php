@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Services;
+
 use App\Http\DTO\RequestWithAuthorizationDTO;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;

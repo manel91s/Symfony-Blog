@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Container\ContainerInterface;
 use Faker\Core\File;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,16 +25,26 @@ class RegisterService
     private UserPasswordHasherInterface $passwordHasher;
     private UserService $userService;
     private EntityManagerInterface $entityManager;
-    private $projectDir;
+    private jwtService $jwtService;
+    private FileUploader $fileUploader;
 
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, KernelInterface $kernel)
+    public function __construct(
+        UserRepository $userRepository,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $entityManager,
+        KernelInterface $kernel,
+        JWTEncoderInterface $jwtEncoder,
+    )
+        
     {
-        $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
         $this->passwordHasher = $passwordHasher;
+        $this->entityManager = $entityManager;
         $this->userService = new UserService($this->userRepository);
-        $this->projectDir = $kernel->getProjectDir();
+        
+        $this->fileUploader = new FileUploader($kernel->getProjectDir(). '/public/uploads/avatar');
+        
     }
 
     /**
@@ -132,9 +143,6 @@ class RegisterService
      */
     private function uploadAvatar(UploadedFile $file): string
     {
-
-        $fileUploader = new FileUploader($this->projectDir . '/public/uploads/avatar');
-
         try {
 
             if ($file->getSize() > 1000000) {
@@ -144,10 +152,12 @@ class RegisterService
             if ($file->getMimeType() !== 'image/jpeg' && $file->getMimeType() !== 'image/png') {
                 throw new BadRequestException("El archivo no es una imagen", Response::HTTP_BAD_REQUEST);
             }
+            
+       
         } catch (BadRequestException $e) {
             throw new BadRequestException($e->getMessage(), $e->getCode());
         }
 
-        return $fileUploader->upload($file);
+        return $this->fileUploader->upload($file);
     }
 }

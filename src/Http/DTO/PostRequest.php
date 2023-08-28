@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class PostRequest implements RequestWithAuthorizationDTO
 {
-    private ?string $id;
+    private ?int $id;
     #[Assert\NotBlank]
     private ?string $title;
     #[Assert\NotBlank]

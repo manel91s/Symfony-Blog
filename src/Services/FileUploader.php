@@ -20,10 +20,26 @@ class FileUploader
             $fileName = md5(uniqid()) . '.' . $file->guessExtension();
             $file->move($this->targetDirectory, $fileName);
             
-        }catch(FileException $e) {
+        } catch(FileException $e) {
             throw new FileException($e->getMessage());
         }
         
         return $fileName;
+    }
+
+    public function remove(string $image) : void {
+
+        $previousImagePath = $this->targetDirectory . '/' . $image;
+      
+        try {
+
+            if(file_exists($previousImagePath)) {
+                unlink($previousImagePath);
+            }
+
+        } catch(FileException $e) {
+            throw new FileException($e->getMessage());
+        }
+      
     }
 }

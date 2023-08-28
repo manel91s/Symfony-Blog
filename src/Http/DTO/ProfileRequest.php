@@ -6,7 +6,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class RegisterRequest implements RequestWithAuthorizationDTO
+
+class ProfileRequest implements RequestWithAuthorizationDTO
 {
     #[Assert\NotBlank]
     private ?string $name;
@@ -14,8 +15,6 @@ class RegisterRequest implements RequestWithAuthorizationDTO
     private ?string $surname;
     #[Assert\NotBlank]
     private ?string $email;
-    #[Assert\NotBlank]
-    private ?string $password;
     private ?UploadedFile $file;
     private ?string $authorizationHeader;
     
@@ -24,7 +23,6 @@ class RegisterRequest implements RequestWithAuthorizationDTO
         $this->name = $request->request->get('name');
         $this->surname = $request->request->get('surname');
         $this->email = $request->request->get('email');
-        $this->password = $request->request->get('password');
         $this->file = $request->files->get('avatar');
         $this->authorizationHeader = $request->headers->get('Authorization');
     }
@@ -42,11 +40,6 @@ class RegisterRequest implements RequestWithAuthorizationDTO
     public function getEmail(): ?string
     {
         return $this->email;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
     }
 
     public function getFile(): ?UploadedFile

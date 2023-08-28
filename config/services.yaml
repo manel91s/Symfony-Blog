@@ -22,6 +22,9 @@ services:
     App\Services\PostService:
         arguments: 
             $postRepository: '@Component\Post\Repository\PostRepository'
+    App\Services\UserService:
+        arguments:
+            $userRepository: '@Component\User\Repository\UserRepository'
     App\:
         resource: '../src/'
         exclude:

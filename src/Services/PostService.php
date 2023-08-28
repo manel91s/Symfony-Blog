@@ -6,7 +6,6 @@ use App\Entity\Post;
 use App\Http\DTO\PostRequest;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
-use jwtService;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -125,7 +124,7 @@ class PostService
 
     private function uploadImage(UploadedFile $file)
     {
-        $fileUploader = new FileUploader($this->projectDir . '/public/uploads/profiles');
+        $fileUploader = new FileUploader($this->projectDir . '/public/uploads/posts');
 
         try {
             

@@ -12,6 +12,8 @@ class UserControllerTest extends WebTestCase
 {
     use RecreateDatabaseTrait;
     private const ENDPOINT  = '/api/user/registration';
+    private const ENDPOINT_UPDATE  = '/api/user/update';
+    private const ENDPOINT_UPDATE_PROFILE  = '/api/user/update/profile';
     private const ENDPOINT_LOGIN  = '/api/user/login';
     private const ENDPOINT_ACTIVATE  = '/api/user/activate';
     private const ENDPOINT_CHECK  = '/api/login_check';
@@ -182,7 +184,6 @@ class UserControllerTest extends WebTestCase
         self::assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
     }
 
-
     /**
      * test login check to get JWT 
      */
@@ -208,7 +209,7 @@ class UserControllerTest extends WebTestCase
     public function testLoginNoActiveUser() :void
     {
         $this->testLoginCheck();
-
+        
         self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->getAuthToken());
 
         $payload = [
@@ -221,6 +222,29 @@ class UserControllerTest extends WebTestCase
         $response = self::$client->getResponse();
 
         self::assertEquals(JsonResponse::HTTP_UNAUTHORIZED, $response->getStatusCode());
+    }
+
+    /**
+     * test the update of a user
+     */
+    public function testUpdateProfileUser(): void
+    {
+        $this->testLoginCheck();
+
+        self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
+
+        $payload = [
+            'name' => 'Manel ACTUALIZADO',
+            'surname' => 'Aguilera ACTUALIZADO',
+            'email' => 'maneliko.hcc@gmail.com'
+        ];
+
+        self::$client->request(Request::METHOD_POST, self::ENDPOINT_UPDATE_PROFILE, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+
     }
     
     public function getAuthToken(): string
