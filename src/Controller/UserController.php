@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
 use App\Http\DTO\ActivateRequest;
+use App\Http\DTO\ChangePasswordRequest;
 use App\Http\DTO\LoginRequest;
 use App\Http\DTO\ProfileRequest;
 use App\Http\DTO\RegisterRequest;
@@ -71,6 +72,24 @@ class UserController extends AbstractController
                 'email' => $user->getEmail(),
                 'avatar' => $user->getAvatar()
             ], 200);
+        } catch (BadRequestException $e) {
+            return $this->json(['data' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    #[Route('/user/update/password', name: 'app_user_password', methods: 'PATCH')]
+    public function updatePassword(
+        ChangePasswordRequest $changePasswordRequest,
+        UserService $userService,
+        JWTEncoderInterface $jwtEncoder,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
+        try {
+
+            $userService->setEncoder($jwtEncoder);
+            $userService->changePassword($changePasswordRequest, $passwordHasher);
+           
+            return $this->json(['msg' => 'La contraseña se ha actualizado correctamente'], 200);
         } catch (BadRequestException $e) {
             return $this->json(['data' => $e->getMessage()], $e->getCode());
         }

@@ -14,6 +14,7 @@ class UserControllerTest extends WebTestCase
     private const ENDPOINT  = '/api/user/registration';
     private const ENDPOINT_UPDATE  = '/api/user/update';
     private const ENDPOINT_UPDATE_PROFILE  = '/api/user/update/profile';
+    private const ENDPOINT_UPDATE_PASSWORD  = '/api/user/update/password';
     private const ENDPOINT_LOGIN  = '/api/user/login';
     private const ENDPOINT_ACTIVATE  = '/api/user/activate';
     private const ENDPOINT_CHECK  = '/api/login_check';
@@ -222,6 +223,29 @@ class UserControllerTest extends WebTestCase
         $response = self::$client->getResponse();
 
         self::assertEquals(JsonResponse::HTTP_UNAUTHORIZED, $response->getStatusCode());
+    }
+
+    /**
+     * test the update of a user
+     */
+    public function testUpdateUserPassword(): void
+    {
+        $this->testRegisterUser();
+        $this->testLoginCheck();
+
+        self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
+
+        $payload = [
+            'oldPassword' => '123456',
+            'newPassword' => '654321',
+        ];
+
+        self::$client->request(Request::METHOD_PATCH, self::ENDPOINT_UPDATE_PASSWORD, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+
     }
 
     /**

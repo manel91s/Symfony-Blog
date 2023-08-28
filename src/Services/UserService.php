@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Entity\User;
+use App\Http\DTO\ChangePasswordRequest;
 use App\Http\DTO\ProfileRequest;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserService 
 {
@@ -23,6 +25,31 @@ class UserService
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
+    }
+
+    /**
+     * Update password User
+     */
+    public function changePassword(
+        ChangePasswordRequest $request,
+        UserPasswordHasherInterface $userPasswordHasher
+    )
+    {
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
+
+        if(!$user = $this->checkUserById($payload['userId'])) {
+            throw new BadRequestException("Este usuario no existe", Response::HTTP_CONFLICT);
+        }
+        
+        if(!$userPasswordHasher->isPasswordValid($user, $request->getOldPassword())){
+            throw new BadRequestException("Las credenciales proporcionadas no son validas", Response::HTTP_UNAUTHORIZED);
+        }
+
+        $hashedPassword = $userPasswordHasher->hashPassword($user, $request->getNewPassword());
+        $user->setPassword($hashedPassword);
+
+        $this->userRepository->save($user, true);
     }
 
     /**
