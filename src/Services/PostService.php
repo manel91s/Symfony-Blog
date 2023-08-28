@@ -70,6 +70,12 @@ class PostService
             );
         }
 
+        if($post->getUser()->getId() !== $payload['userId']) {
+            throw new BadRequestException(
+                "El post que intentar eliminar no pertenece ha este usuario", Response::HTTP_CONFLICT
+            );
+        }
+
         $post->setTitle($request->getTitle());
         $post->setBody($request->getBody());
 
@@ -79,6 +85,30 @@ class PostService
         }
         
         $this->postRepository->save($post, true);
+    }
+
+    public function delete(PostRequest $request): void
+    {
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
+
+        if(!$this->userService->checkUserById($payload['userId'])) {
+            throw new BadRequestException("El usuario no existe", Response::HTTP_CONFLICT);
+        }
+
+        if(!$post = $this->postRepository->find($request->getId())) {
+            throw new BadRequestException(
+                "El post que intentas editar no ha sido encontrado", Response::HTTP_NOT_FOUND
+            );
+        }
+
+        if($post->getUser()->getId() !== intval($payload['userId'])) {
+            throw new BadRequestException(
+                "El post que intentar eliminar no pertenece ha este usuario", Response::HTTP_CONFLICT
+            );
+        }
+
+        $this->postRepository->remove($post, true);
     }
 
     public function getPosts(): array

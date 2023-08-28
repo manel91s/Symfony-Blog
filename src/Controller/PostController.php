@@ -18,6 +18,10 @@ class PostController extends AbstractController
         try {
             $postService->save($request);
 
+            return $this->json([
+                'msg' => 'El post se ha registrado correctamente'
+            ], 201);
+
         } catch(BadRequestException $e) {
             return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
@@ -31,11 +35,28 @@ class PostController extends AbstractController
        try {
             $postService->update($request);
 
+            return $this->json([
+                'msg' => 'El post se ha actualizado correctamente'
+            ], 200);
+
         } catch(BadRequestException $e) {
             return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
+    }
 
-        return $this->json([], JsonResponse::HTTP_CREATED);
+    #[Route('/post/delete/{id}', name: 'app_post_delete', methods: 'DELETE')]
+    public function deletePost(PostRequest $request, PostService $postService): JsonResponse
+    {
+       try {
+            $postService->delete($request);
+
+            return $this->json([
+                'msg' => 'El post se ha eliminado correctamente'
+            ], 200);
+
+        } catch(BadRequestException $e) {
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
+        }
     }
 
     #[Route('/posts', name: 'app_post', methods: 'GET')]

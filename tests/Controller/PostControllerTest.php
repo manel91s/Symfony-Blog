@@ -16,6 +16,7 @@ class PostControllerTest extends UserCredentialsAbstractTest
     private const ENDPOINT_POSTS  = '/api/posts';
     private const ENDPOINT_SAVE = '/api/post/save';
     private const ENDPOINT_UPDATE = '/api/post/update';
+    private const ENDPOINT_DELETE = '/api/post/delete';
   
     public function setUp(): void
     {
@@ -116,7 +117,7 @@ class PostControllerTest extends UserCredentialsAbstractTest
     }
 
     public function testUpdatePost(): void
-    {  
+    {
         $this->testLoginCheck();
 
         self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
@@ -130,9 +131,25 @@ class PostControllerTest extends UserCredentialsAbstractTest
 
         $response = self::$client->getResponse();
 
-        self::assertEquals(JsonResponse::HTTP_CREATED, $response->getStatusCode());
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
     }
 
+    public function testDeletePost(): void
+    {  
+        $this->testLoginCheck();
 
+        $payload = [
+            'title' => 'Blog Personal Manel ACTUALIZADO',
+            'body' => 'Esto es el cuerpo del post ACTUALIZADO'
+        ];
+
+        self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
+        
+        self::$client->request(Request::METHOD_DELETE, self::ENDPOINT_DELETE. '/6', [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+    }
 
 }
