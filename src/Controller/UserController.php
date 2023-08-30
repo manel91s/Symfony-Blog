@@ -2,29 +2,24 @@
 
 namespace App\Controller;
 
-use App\Controller\Api\Listener\JWTDecodedListener;
-use App\Entity\User;
 use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\ChangePasswordRequest;
 use App\Http\DTO\LoginRequest;
 use App\Http\DTO\ProfileRequest;
 use App\Http\DTO\RegisterRequest;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
-use App\Services\FileUploader;
 use App\Services\LoginService;
 use App\Services\RegisterService;
 use App\Services\UserService;
-use Exception;
+
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Mailer\MailerInterface;
+
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 

@@ -1,7 +1,7 @@
 App\Entity\Post:
   Post_{1..5}:
+    tags: ['@Tag_1', '@Tag_2']
     __construct:
       title: <title()>
       body: <name()>
       user: '@User_*'
- 

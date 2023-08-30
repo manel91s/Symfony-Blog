@@ -72,7 +72,7 @@ class PostService
 
         if($post->getUser()->getId() !== $payload['userId']) {
             throw new BadRequestException(
-                "El post que intentar eliminar no pertenece ha este usuario", Response::HTTP_CONFLICT
+                "El post que intentas actualizar no pertenece ha este usuario", Response::HTTP_CONFLICT
             );
         }
 

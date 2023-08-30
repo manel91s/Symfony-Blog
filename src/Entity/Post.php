@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -11,6 +13,10 @@ class Post
 {
     #[ORM\ManyToOne(targetEntity: "App\Entity\User", inversedBy: "posts")]
     private ?User $user;
+
+    #[ORM\ManyToMany(targetEntity: "App\Entity\Tag", inversedBy: "posts")]
+    #[ORM\JoinTable(name: "post_tags")]
+    private ?Collection $tags;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -37,7 +43,7 @@ class Post
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
-
+    
     public function __construct(string $title, string $body, ?User $user = null)
     {
         $this->title = $title;
@@ -46,6 +52,7 @@ class Post
         $this->date_registration = new \DateTimeImmutable();
         $this->date_update = new \DateTimeImmutable();
         $this->public = true;
+        $this->tags = new ArrayCollection();
     }
 
     public function getUser(): User
@@ -138,6 +145,31 @@ class Post
     public function setImage(?string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+        public function getTags(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags[] = $tag;
+            $tag->addPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): self
+    {
+        if ($this->tags->contains($tag)) {
+            $this->tags->removeElement($tag);
+            $tag->removePost($this);
+        }
 
         return $this;
     }
