@@ -65,7 +65,7 @@ class TagService
 
         if(!$tag = $this->tagRepository->find($request->getId())) {
             throw new BadRequestException(
-                "El post que intentas editar no ha sido encontrado", Response::HTTP_NOT_FOUND
+                "El tag que intentas editar no ha sido encontrado", Response::HTTP_NOT_FOUND
             );
         }
 
@@ -86,7 +86,7 @@ class TagService
 
         if(!$tag = $this->tagRepository->find($request->getId())) {
             throw new BadRequestException(
-                "El post que intentas editar no ha sido encontrado", Response::HTTP_NOT_FOUND
+                "El tag que intentas editar no ha sido encontrado", Response::HTTP_NOT_FOUND
             );
         }
 
