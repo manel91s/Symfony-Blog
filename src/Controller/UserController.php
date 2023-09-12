@@ -39,10 +39,11 @@ class UserController extends AbstractController
 
             return $this->json([
                 'token' => $user->getToken(),
-                'msg' => 'La cuenta de usuario se ha creado correctamente'
+                'msg' => 'La cuenta de usuario se ha creado correctamente, revisa tu email 
+                para confirmar tu cuenta.'
             ], 201);
         } catch (BadRequestException $e) {
-            return $this->json(['data' => $e->getMessage()], $e->getCode());
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -68,7 +69,7 @@ class UserController extends AbstractController
                 'avatar' => $user->getAvatar()
             ], 200);
         } catch (BadRequestException $e) {
-            return $this->json(['data' => $e->getMessage()], $e->getCode());
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -86,7 +87,7 @@ class UserController extends AbstractController
            
             return $this->json(['msg' => 'La contraseña se ha actualizado correctamente'], 200);
         } catch (BadRequestException $e) {
-            return $this->json(['data' => $e->getMessage()], $e->getCode());
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
     }
 
@@ -113,7 +114,7 @@ class UserController extends AbstractController
         } catch (BadRequestException $e) {
 
             return $this->json([
-                'data' => $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], $e->getCode());
         }
     }
@@ -129,7 +130,7 @@ class UserController extends AbstractController
             ], 200);
         } catch (BadRequestException $e) {
             return $this->json([
-                'data' => $e->getMessage(),
+                'msg' => $e->getMessage(),
             ], $e->getCode());
         }
     }

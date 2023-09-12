@@ -51,7 +51,7 @@ class RegisterService
      * Registering the user
      * @return User
      */
-    public function registerUser(RegisterRequest $request): User
+    public function registerUser(RegisterRequest $request): ?User
     {
 
         $this->entityManager->beginTransaction();
