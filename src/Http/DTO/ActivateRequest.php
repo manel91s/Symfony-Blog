@@ -8,11 +8,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ActivateRequest implements RequestDTO
 {
     #[Assert\NotBlank]
-    private string $token;
+    private ?string $token;
 
     public function __construct(Request $request)
     {
-        $this->token = $request->request->get('token');
+        $this->token = substr($request->attributes->get('token'), 6);
     }
 
     public function getToken(): string

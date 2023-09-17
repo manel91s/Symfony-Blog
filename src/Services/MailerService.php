@@ -19,29 +19,21 @@ class MailerService
     {
         $this->mailer = $mailer;
     }
-    public function sendEmail(User $user): void
+    public function sendEmail(User $user, array $template): void
     {
         try {
 
             $email = (new Email())
             ->from('info@manelproyectweb.es')
             ->to($user->getEmail())
-            ->subject('Información de activación de cuenta')
-            ->text($this->getBodyEmail($user));
+            ->subject($template['subject'])
+            ->text($template['body']);
 
-            $this->mailer->send($email);  
+            $this->mailer->send($email);
             
         }catch(Exception $e) {
             throw new BadRequestException($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
         
-    }
-
-    private function getBodyEmail(User $user): string
-    {
-        if(array_key_exists('HTTP_HOST', $_SERVER)) {
-            return 'Bievenido a la web de Manel, para completar el registro de tu cuenta, haz click en el siguiente enlace: http://' . $_SERVER['HTTP_HOST'] . '/user/activate/' . $user->getToken();
-        }
-        return "Este es el email para enviar cuando se lanzan los tests";
     }
 }

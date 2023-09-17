@@ -18,8 +18,10 @@ class UserControllerTest extends WebTestCase
     private const ENDPOINT_LOGIN  = '/api/user/login';
     private const ENDPOINT_ACTIVATE  = '/api/user/activate';
     private const ENDPOINT_CHECK  = '/api/login_check';
+    private const ENDPOINT_FORGOT_PASSWORD  = '/api/user/forgot-password';
     private static ?KernelBrowser $client = null;
     private string $authToken = '';
+    private string $tokenUserBD = '';
 
     public function setUp(): void
     {
@@ -146,7 +148,7 @@ class UserControllerTest extends WebTestCase
             'token' => 'e236416c05d3a05d8b456d83370ac0acbd6a8811'
         ];
 
-        self::$client->request(Request::METHOD_GET, self::ENDPOINT_ACTIVATE, [], [], [], json_encode($payload));
+        self::$client->request(Request::METHOD_GET, self::ENDPOINT_ACTIVATE. '/token=e236416c05d3a05d8b456d83370ac0acbd6a8811', [], [], [], json_encode($payload));
 
         $response = self::$client->getResponse();
 
@@ -159,7 +161,7 @@ class UserControllerTest extends WebTestCase
             'token' => '7cd4fdff95377f252ce04951833be4e2d5412d36'
         ];
 
-        self::$client->request(Request::METHOD_GET, self::ENDPOINT_ACTIVATE, [], [], [], json_encode($payload));
+        self::$client->request(Request::METHOD_GET, self::ENDPOINT_ACTIVATE. '/token=7cd4fdff95377f252ce04951833be4e2d5412d36', [], [], [], json_encode($payload));
 
         $response = self::$client->getResponse();
 
@@ -188,11 +190,11 @@ class UserControllerTest extends WebTestCase
     /**
      * test login check to get JWT 
      */
-    public function testLoginCheck(): void
+    public function testLoginCheck(string $newPassword = ''): void
     {
         $payload = [
             'username' => 'manel.aguilera91@gmail.com',
-            'password' => '123456'
+            'password' => empty($newPassword) ? '123456' : $newPassword
         ];
 
         self::$client->request(Request::METHOD_POST, self::ENDPOINT_CHECK, [], [], [], json_encode($payload));
@@ -230,7 +232,6 @@ class UserControllerTest extends WebTestCase
      */
     public function testUpdateUserPassword(): void
     {
-        $this->testRegisterUser();
         $this->testLoginCheck();
 
         self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
@@ -253,7 +254,9 @@ class UserControllerTest extends WebTestCase
      */
     public function testUpdateProfileUser(): void
     {
-        $this->testLoginCheck();
+        $newPassword = '654321';
+
+        $this->testLoginCheck($newPassword);
 
         self::$client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $this->authToken);
 
@@ -269,6 +272,38 @@ class UserControllerTest extends WebTestCase
 
         self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
 
+    }
+
+    /**
+     * test reset token of a user
+     */
+    public function testForgotPassword(): void
+    {
+        $payload = [
+            'email' => 'maneliko@msn.com'
+        ];
+
+        self::$client->request(Request::METHOD_PATCH, self::ENDPOINT_FORGOT_PASSWORD, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
+    }
+
+    /**
+     * test reset token of a user
+     */
+    public function testRestorePassword(): void
+    {
+        $payload = [
+            'email' => 'maneliko@msn.com'
+        ];
+
+        self::$client->request(Request::METHOD_PATCH, self::ENDPOINT_FORGOT_PASSWORD, [], [], [], json_encode($payload));
+
+        $response = self::$client->getResponse();
+
+        self::assertEquals(JsonResponse::HTTP_OK, $response->getStatusCode());
     }
     
     public function getAuthToken(): string

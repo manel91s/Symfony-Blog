@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\ChangePasswordRequest;
+use App\Http\DTO\ForgotPasswordRequest;
 use App\Http\DTO\LoginRequest;
 use App\Http\DTO\ProfileRequest;
 use App\Http\DTO\RegisterRequest;
+use App\Http\DTO\RestorePasswordRequest;
 use App\Repository\UserRepository;
 use App\Services\LoginService;
 use App\Services\RegisterService;
@@ -19,7 +21,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 use Symfony\Component\HttpKernel\KernelInterface;
-
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -31,11 +33,12 @@ class UserController extends AbstractController
     public function registration(
         RegisterRequest $registerRequest,
         RegisterService $registerService,
+        MailerInterface $mailer
     ): JsonResponse {
         try {
 
             $user = $registerService->registerUser($registerRequest);
-            //$registerService->sendEmail($mailer, $user);
+            $registerService->sendEmail($mailer, $user);
 
             return $this->json([
                 'token' => $user->getToken(),
@@ -84,7 +87,7 @@ class UserController extends AbstractController
 
             $userService->setEncoder($jwtEncoder);
             $userService->changePassword($changePasswordRequest, $passwordHasher);
-           
+
             return $this->json(['msg' => 'La contraseña se ha actualizado correctamente'], 200);
         } catch (BadRequestException $e) {
             return $this->json(['msg' => $e->getMessage()], $e->getCode());
@@ -118,7 +121,7 @@ class UserController extends AbstractController
             ], $e->getCode());
         }
     }
-    #[Route('/user/activate', name: 'app_user_activate', methods: 'GET')]
+    #[Route('/user/activate/{token}', name: 'app_user_activate', methods: 'GET')]
     public function activation(ActivateRequest $activateRequest, LoginService $loginService)
     {
         try {
@@ -132,6 +135,44 @@ class UserController extends AbstractController
             return $this->json([
                 'msg' => $e->getMessage(),
             ], $e->getCode());
+        }
+    }
+
+    #[Route('/user/forgot-password', name: 'app_user_forgot_password', methods: 'PATCH')]
+    public function forgotPassword(
+        ForgotPasswordRequest $forgotPasswordRequest,
+        LoginService $loginService,
+        MailerInterface $mailer
+    ) {
+        try {
+
+            $loginService->forgotPassword($forgotPasswordRequest, $mailer);
+
+            return $this->json([
+                'msg' => 'Se ha enviado un email para restablecer la contraseña',
+            ], 200);
+        } catch (BadRequestException $e) {
+            return $this->json([
+                'msg' => $e->getMessage(),
+            ], $e->getCode());
+        }
+    }
+
+    #[Route('/user/restore-password/{token}', name: 'app_user_restore_password', methods: 'PATCH')]
+    public function restorePassword(
+        RestorePasswordRequest $changePasswordRequest,
+        UserService $userService,
+        JWTEncoderInterface $jwtEncoder,
+        UserPasswordHasherInterface $passwordHasher
+    ) {
+        try {
+
+            $userService->setEncoder($jwtEncoder);
+            $userService->restorePassword($changePasswordRequest, $passwordHasher);
+
+            return $this->json(['msg' => 'La contraseña se ha actualizado correctamente'], 200);
+        } catch (BadRequestException $e) {
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
     }
 }

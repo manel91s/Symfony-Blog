@@ -26,7 +26,7 @@ class RegisterService
     private UserService $userService;
     private EntityManagerInterface $entityManager;
     private jwtService $jwtService;
-    private FileUploader $fileUploader;
+    private FileUploader $fileUploader; 
 
 
     public function __construct(
@@ -107,8 +107,17 @@ class RegisterService
     {
         $mailer = new MailerService($mailer);
 
+        $url = array_key_exists('HTTP_HOST', $_SERVER) ?: 'test';
+
+        $template = [
+            'subject' => 'Información de activación de cuenta',
+            'body' => 'Bievenido a la web de Manel, para completar el registro de tu cuenta, 
+            haz click en el siguiente enlace: http://' . $url . '/confirm/' . $user->getToken(),
+        ];
+        
         try {
-            $mailer->sendEmail($user);
+            $mailer->sendEmail($user, $template);
+            
         } catch (BadRequestException $e) {
             throw new BadRequestException($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }

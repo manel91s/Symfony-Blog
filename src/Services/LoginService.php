@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Controller\Api\Listener\JWTDecodedListener;
 use App\Entity\User;
 use App\Http\DTO\ActivateRequest;
+use App\Http\DTO\ForgotPasswordRequest;
 use App\Http\DTO\LoginRequest;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class LoginService
@@ -87,9 +89,49 @@ class LoginService
             $this->userRepository->save($user, true);
             
         }catch(BadRequestException $e) {
-            throw new BadRequestException("Error al activar la cuenta", Response::HTTP_UNAUTHORIZED);
+            throw new BadRequestException($e->getMessage(), $e->getCode());
         }
 
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request, MailerInterface $mailer): void
+    {
+        try {
+
+            $user = $this->userService->checkUser($request->getEmail());
+
+            if (!$user) {
+                throw new BadRequestException("El email del usuario no existe", Response::HTTP_UNAUTHORIZED);
+            }
+
+            $user->setToken(sha1(random_bytes(12)));
+      
+            $this->userRepository->save($user, true);
+
+            $this->sendEmail($mailer, $user);
+            
+        }catch(BadRequestException $e) {
+            throw new BadRequestException($e->getMessage(), $e->getCode());
+        }
+    }
+
+    private function sendEmail(MailerInterface $mailer, User $user) : void
+    {
+        $mailer = new MailerService($mailer);
+
+        $url = array_key_exists('HTTP_HOST', $_SERVER) ?: 'test';
+        $template = [
+            'subject' => 'Información de recuperación de cuenta',
+            'body' => 'Adjuntamos el enlace para poder restablecer la contraseña:
+             http://' . $url . '/user/forgot-password/' . $user->getToken(),
+        ];
+        
+        try {
+            $mailer->sendEmail($user, $template);
+            
+        } catch (BadRequestException $e) {
+            throw new BadRequestException($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
     }
 
 }
