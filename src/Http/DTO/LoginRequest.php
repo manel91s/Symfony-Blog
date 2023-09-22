@@ -13,14 +13,10 @@ class LoginRequest implements RequestWithAuthorizationDTO
     #[Assert\NotBlank]
     private ?string $password;
 
-    #[Assert\NotBlank]
-    private ?string $authorizationHeader;
     public function __construct(Request $request)
     {
         $this->email = $request->request->get('email');
         $this->password = $request->request->get('password');
-        $this->authorizationHeader = $request->headers->get('Authorization');
-        
     }
 
     public function getEmail(): ?string

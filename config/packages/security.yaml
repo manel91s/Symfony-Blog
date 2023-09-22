@@ -48,6 +48,7 @@ security:
         - { path: ^/api/user/activate, roles: PUBLIC_ACCESS }
         - { path: ^/api/user/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/api/user/restore-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/images, roles: PUBLIC_ACCESS }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }

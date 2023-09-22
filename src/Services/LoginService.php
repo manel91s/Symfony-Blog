@@ -45,13 +45,6 @@ class LoginService
             throw new BadRequestException("Este email no está registrado", Response::HTTP_CONFLICT);
         }
         
-        $bearerToken = $this->jwtService->getTokenFromRequest($request);
-        $payload = $this->jwtService->decodeToken($bearerToken);
-
-        if ($user && $user->getId() !== $payload['userId']) {
-            throw new BadRequestException("Estas accediendo con un usuario incorrecto", Response::HTTP_UNAUTHORIZED);
-        }
-
         if ($user && !$this->comparePasword($user, $request->getPassword())) {
             throw new BadRequestException("Contraseña incorrecta", Response::HTTP_UNAUTHORIZED);
         }
@@ -74,7 +67,6 @@ class LoginService
 
     public function activeUser(ActivateRequest $request): void
     {
-
         try {
 
             $user = $this->userService->checkUserByToken($request->getToken());
@@ -119,11 +111,11 @@ class LoginService
     {
         $mailer = new MailerService($mailer);
 
-        $url = array_key_exists('HTTP_HOST', $_SERVER) ?: 'test';
+        $url = array_key_exists('HTTP_HOST', $_SERVER) ? $_SERVER['HTTP_HOST'] : 'test';
         $template = [
             'subject' => 'Información de recuperación de cuenta',
             'body' => 'Adjuntamos el enlace para poder restablecer la contraseña:
-             http://' . $url . '/user/forgot-password/' . $user->getToken(),
+             http://' . $url . '/user/restore-password/' . $user->getToken(),
         ];
         
         try {

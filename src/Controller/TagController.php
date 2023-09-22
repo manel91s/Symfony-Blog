@@ -75,7 +75,7 @@ class TagController extends AbstractController
 
             $tags = $tagService->getTags();
 
-            return $this->json( [ 'data' => $tags ], 200);
+            return $this->json($tags , 200);
             
         } catch (BadRequestException $e) {
             return $this->json(['msg' => $e->getMessage()], $e->getCode());

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Entity\User;
 use App\Http\DTO\ChangePasswordRequest;
+use App\Http\DTO\CheckProfileRequest;
 use App\Http\DTO\ProfileRequest;
 use App\Http\DTO\RestorePasswordRequest;
 use App\Repository\UserRepository;
@@ -26,6 +27,52 @@ class UserService
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
+    }
+
+    /**
+     * Check profile User
+     */
+    public function checkProfile(CheckProfileRequest $request)
+    {
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
+
+        if (!$user = $this->checkUserById($payload['userId'])) {
+            throw new BadRequestException("Este usuario no existe", Response::HTTP_CONFLICT);
+        }
+
+        return $user;
+    }
+
+    /**
+     * get Users
+     */
+    public function getUsers(CheckProfileRequest $request)
+    {
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
+
+        if (!$user = $this->checkUserById($payload['userId'])) {
+            throw new BadRequestException("Este usuario no existe", Response::HTTP_CONFLICT);
+        }
+
+        if($user->getRoles()[0] !== 'ADMIN') {
+            throw new BadRequestException(
+                "No tienes permisos para recuperar esta información", Response::HTTP_CONFLICT
+            );
+        }
+
+        $users = $this->userRepository->findAll();
+
+        $arrayUsers = [];
+        foreach($users as $user) {
+            $arrayUsers[] = [
+                'id' => $user->getId(),
+                'name' => $user->getName(),
+                'avatar' => $user->getAvatar()
+            ];
+        }
+        return $arrayUsers;
     }
 
     /**
@@ -118,12 +165,12 @@ class UserService
         return $this->userRepository->findOneBy(['token' => $token]);
     }
 
-    public function setEncoder(JWTEncoderInterface $jwtEncoder)
+    public function setEncoder(JWTEncoderInterface $jwtEncoder): void
     {
         $this->jwtService = new jwtService($jwtEncoder);
     }
 
-    public function setFileUploader(KernelInterface $kernel)
+    public function setFileUploader(KernelInterface $kernel): void
     {
         $this->fileUploader = new FileUploader($kernel->getProjectDir() . '/public/uploads/avatar');
     }

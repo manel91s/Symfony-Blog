@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Http\DTO\ActivateRequest;
 use App\Http\DTO\ChangePasswordRequest;
+use App\Http\DTO\CheckProfileRequest;
 use App\Http\DTO\ForgotPasswordRequest;
 use App\Http\DTO\LoginRequest;
 use App\Http\DTO\ProfileRequest;
@@ -45,6 +46,51 @@ class UserController extends AbstractController
                 'msg' => 'La cuenta de usuario se ha creado correctamente, revisa tu email 
                 para confirmar tu cuenta.'
             ], 201);
+        } catch (BadRequestException $e) {
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    
+    #[Route('/users', name: 'app_users', methods: 'GET')]
+    public function getUsers(
+        CheckProfileRequest $checkProfileRequest,
+        UserService $userService,
+        JWTEncoderInterface $jwtEncoder,
+    ): JsonResponse {
+        try {
+
+            $userService->setEncoder($jwtEncoder);
+            $users = $userService->getUsers($checkProfileRequest);
+
+            return $this->json( $users, 200);
+
+        } catch (BadRequestException $e) {
+            return $this->json(['msg' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    #[Route('/user/check', name: 'app_user_check', methods: 'GET')]
+    public function checkProfile(
+        CheckProfileRequest $checkProfileRequest,
+        UserService $userService,
+        JWTEncoderInterface $jwtEncoder,
+        KernelInterface $kernel
+    ): JsonResponse {
+        try {
+
+            $userService->setEncoder($jwtEncoder);
+            $userService->setFileUploader($kernel);
+
+            $user = $userService->checkProfile($checkProfileRequest);
+
+            return $this->json([
+                'id' => $user->getId(),
+                'name' => $user->getName(),
+                'surname' => $user->getSurname(),
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles()
+            ], 200);
         } catch (BadRequestException $e) {
             return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }

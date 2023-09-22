@@ -9,3 +9,7 @@ api_login_check:
 kernel:
     resource: ../src/Kernel.php
     type: annotation
+
+images_avatar:
+    path: /images/{filename}
+    controller: App\Controller\ImageController::show
