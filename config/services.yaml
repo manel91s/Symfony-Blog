@@ -22,6 +22,7 @@ services:
     App\Services\PostService:
         arguments: 
             $postRepository: '@Component\Post\Repository\PostRepository'
+            $tagRepository: '@Component\Post\Repository\TagRepository'
     App\Services\UserService:
         arguments:
             $userRepository: '@Component\User\Repository\UserRepository'

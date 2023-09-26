@@ -43,7 +43,7 @@ class TagService
 
     public function get(int $id): Tag
     {
-        return $this->tagRepository->findOneBy($id);
+        return $this->tagRepository->find($id);
     }
 
     public function save(TagRequest $request): void

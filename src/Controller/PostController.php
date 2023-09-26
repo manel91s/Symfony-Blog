@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Http\DTO\CheckProfileRequest;
 use App\Http\DTO\PostRequest;
 use App\Services\PostService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,7 +14,9 @@ class PostController extends AbstractController
 {
 
     #[Route('/post/save', name: 'app_post_save', methods: 'POST')]
-    public function savePost(PostRequest $request, PostService $postService): JsonResponse
+    public function savePost(
+        PostRequest $request, 
+        PostService $postService): JsonResponse
     {
         try {
             $postService->save($request);
@@ -69,6 +72,19 @@ class PostController extends AbstractController
             return $this->json([
                 'data' => $posts
             ], 200);
+        } catch (BadRequestException $e) {
+            return $this->json(['msg' => "No hay publicaciones"], $e->getCode());
+        }
+    }
+
+    #[Route('/posts/user', name: 'app_post', methods: 'GET')]
+    public function getUserPosts(CheckProfileRequest $request, PostService $postService): JsonResponse
+    {
+        try {
+
+            $posts = $postService->getUserPosts($request);
+
+            return $this->json($posts, 200);
         } catch (BadRequestException $e) {
             return $this->json(['msg' => "No hay publicaciones"], $e->getCode());
         }

@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Entity\Post;
+use App\Http\DTO\CheckProfileRequest;
 use App\Http\DTO\PostRequest;
 use App\Repository\PostRepository;
+use App\Repository\TagRepository;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -15,18 +17,22 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class PostService 
 {
     private PostRepository $postRepository;
+   
     private UserService $userService;
+    private TagService $tagService;
     private $projectDir;
     private jwtService $jwtService;
 
     public function __construct(
         PostRepository $postRepository,
+        TagRepository $tagRepository,
         UserRepository $userRepository,
         KernelInterface $kernel,
         JWTEncoderInterface $jwtEncoder)
     {
         $this->postRepository = $postRepository;
         $this->userService = new UserService($userRepository);
+        $this->tagService = new TagService($tagRepository, $userRepository, $jwtEncoder);
         $this->jwtService = new jwtService($jwtEncoder);
         $this->projectDir = $kernel->getProjectDir();
     }
@@ -40,18 +46,30 @@ class PostService
         if(!$user = $this->userService->checkUserById($payload['userId'])) {
             throw new BadRequestException("Este email no está registrado", Response::HTTP_CONFLICT);
         }
+
+        $idTags = $request->getTags();
+        $tags = [];
+        foreach($idTags as $idTag) {
+            if(!$tagObject = $this->tagService->get(intval($idTag))) {
+                throw new BadRequestException("El tag no existe", Response::HTTP_CONFLICT);
+            }
+            $tags[] = $tagObject;
+        }
         
         $post = new Post(
             $request->getTitle(),
             $request->getBody(),
             $user
         );
-
+        foreach($tags as $tag) {
+            $post->addTag($tag);
+        }
+        
         if ($request->getImage()) {
             $fileName = $this->uploadImage($request->getImage());
             $post->setImage($fileName);
         }
-        
+
         $this->postRepository->save($post, true);
     }
 
@@ -120,6 +138,36 @@ class PostService
             $arrayPosts[] = [
                 'id' => $post->getId(),
                 'title' => $post->getTitle(),
+                'body'  => $post->getBody(),
+                'image' => $post->getImage(),
+                'user' => [
+                    'id' => $post->getUser()->getId(),
+                    'name' => $post->getUser()->getName(),
+                    'email' => $post->getUser()->getEmail(),
+                ]
+            ];
+        }
+
+        return $arrayPosts;
+    }
+
+    public function getUserPosts(CheckProfileRequest $request): array
+    {
+        $bearerToken = $this->jwtService->getTokenFromRequest($request);
+        $payload = $this->jwtService->decodeToken($bearerToken);
+
+        if(!$this->userService->checkUserById($payload['userId'])) {
+            throw new BadRequestException("El usuario no existe", Response::HTTP_CONFLICT);
+        }
+
+        $posts = $this->postRepository->findBy(['user' => $payload['userId']]);
+
+        $arrayPosts = [];
+        foreach ($posts as $post) {
+            $arrayPosts[] = [
+                'id' => $post->getId(),
+                'title' => $post->getTitle(),
+                'body'  => $post->getBody(),
                 'image' => $post->getImage(),
                 'user' => [
                     'id' => $post->getUser()->getId(),
