@@ -2,6 +2,8 @@
 
 Este es el repositorio principal de mi blog personal sobre tecnología y proyectos personales. El blog está construido sobre una API REST desarrollada con Symfony y utiliza la tecnología JSON Web Tokens (JWT) para la gestión de usuarios.
 
+**Nota: Este proyecto se encuentra en fase de desarrollo y puede estar en constante evolución.**
+
 ## Contenido
 
 - [Introducción](#introducción)
@@ -21,7 +23,6 @@ Este proyecto tiene como objetivo proporcionar un espacio en línea donde puedo 
 - **Gestión de Usuarios:** Los usuarios pueden registrarse, iniciar sesión y gestionar su perfil utilizando JWT para la autenticación.
 - **Publicación de Artículos:** Puedes crear, editar y eliminar artículos en el blog.
 - **Categorización de Artículos:** Los artículos pueden ser categorizados para una navegación más sencilla.
-- **Comentarios:** Los usuarios pueden comentar en los artículos para iniciar discusiones.
 - **Búsqueda:** Búsqueda de artículos por palabras clave.
 - **API RESTful:** Permite el acceso a los datos y funcionalidades a través de una API REST segura con JWT.
 
