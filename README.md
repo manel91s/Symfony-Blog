@@ -31,5 +31,4 @@ Este proyecto tiene como objetivo proporcionar un espacio en línea donde puedo 
 - PHP 8 o superior
 - Composer
 - Symfony 5.3 o superior
-- MySQL u otro sistema de gestión de bases de datos compatible
-- JWT para la autenticación de usuarios
+- MySQL
