@@ -16,6 +16,7 @@ class PostRequest implements RequestWithAuthorizationDTO
     private ?string $slug;
     private ?UploadedFile $image;
     #[Assert\NotBlank]
+    private ?array $tags;
     private ?string $authorizationHeader;
 
     public function __construct(Request $request)
@@ -23,6 +24,7 @@ class PostRequest implements RequestWithAuthorizationDTO
         $this->id = $request->attributes->get('id');
         $this->title = $request->request->get('title');
         $this->body = $request->request->get('body');
+        $this->tags = explode(',', $request->request->get('tags'));
         $this->authorizationHeader = $request->headers->get('Authorization');
         $this->image = $request->files->get('image');
     }
@@ -50,5 +52,11 @@ class PostRequest implements RequestWithAuthorizationDTO
     {
         return $this->image;
     }
+
+    public function getTags(): ?array
+    {
+        return $this->tags;
+    }
+
 
 }

@@ -44,10 +44,11 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/user/registration, roles: PUBLIC_ACCESS }
-        - { path: ^/api/user/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/user/login, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/user/activate, roles: PUBLIC_ACCESS }
         - { path: ^/api/user/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/api/user/restore-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/post/save, roles: PUBLIC_ACCESS }
         - { path: ^/api/images, roles: PUBLIC_ACCESS }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }

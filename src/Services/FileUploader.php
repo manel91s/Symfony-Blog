@@ -30,7 +30,7 @@ class FileUploader
     public function remove(string $image) : void {
 
         $previousImagePath = $this->targetDirectory . '/' . $image;
-      
+        
         try {
 
             if(file_exists($previousImagePath)) {

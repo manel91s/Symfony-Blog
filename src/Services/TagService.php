@@ -25,10 +25,15 @@ class TagService
         $this->userService = new UserService($userRepository);
     }
 
+    public function get(int $id): Tag
+    {
+        return $this->tagRepository->find($id);
+    }
+
     public function getTags(): array
     {
         if (!$tags = $this->tagRepository->findAll()) {
-            throw new BadRequestException("Este email no está registrado", Response::HTTP_NOT_FOUND);
+            throw new BadRequestException("No se encuentran tags en base de datos", Response::HTTP_NOT_FOUND);
         }
 
         $arrayTags = [];
@@ -41,10 +46,16 @@ class TagService
         return $arrayTags;
     }
 
-    public function get(int $id): Tag
+    public function getTagObjects(array $idTags): array
     {
-        return $this->tagRepository->findOneBy($id);
+        $tags = [];
+        foreach ($idTags as $idTag) {
+            $tags[] = $this->tagRepository->find($idTag);
+        }
+
+        return $tags;
     }
+
 
     public function save(TagRequest $request): void
     {

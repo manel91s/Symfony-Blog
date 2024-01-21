@@ -26,25 +26,20 @@ class RegisterService
     private UserService $userService;
     private EntityManagerInterface $entityManager;
     private jwtService $jwtService;
-    private FileUploader $fileUploader; 
+    private FileUploader $fileUploader;
 
 
     public function __construct(
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        KernelInterface $kernel,
-        JWTEncoderInterface $jwtEncoder,
-    )
-        
-    {
+        KernelInterface $kernel
+    ) {
         $this->userRepository = $userRepository;
         $this->passwordHasher = $passwordHasher;
         $this->entityManager = $entityManager;
         $this->userService = new UserService($this->userRepository);
-        
-        $this->fileUploader = new FileUploader($kernel->getProjectDir(). '/public/uploads/avatar');
-        
+        $this->fileUploader = new FileUploader($kernel->getProjectDir() . '/public/uploads/avatar');
     }
 
     /**
@@ -61,7 +56,7 @@ class RegisterService
             if ($this->isUserRegistered($request)) {
                 throw new BadRequestException("Este email ya está registrado", Response::HTTP_CONFLICT);
             }
- 
+
             $user = new User(
                 $request->getName(),
                 $request->getSurname(),
@@ -114,10 +109,9 @@ class RegisterService
             'body' => 'Bievenido a la web de Manel, para completar el registro de tu cuenta, 
             haz click en el siguiente enlace: http://' . $url . '/confirm/' . $user->getToken(),
         ];
-        
+
         try {
             $mailer->sendEmail($user, $template);
-            
         } catch (BadRequestException $e) {
             throw new BadRequestException($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
@@ -161,8 +155,6 @@ class RegisterService
             if ($file->getMimeType() !== 'image/jpeg' && $file->getMimeType() !== 'image/png') {
                 throw new BadRequestException("El archivo no es una imagen", Response::HTTP_BAD_REQUEST);
             }
-            
-       
         } catch (BadRequestException $e) {
             throw new BadRequestException($e->getMessage(), $e->getCode());
         }

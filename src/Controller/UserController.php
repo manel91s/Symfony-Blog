@@ -51,7 +51,7 @@ class UserController extends AbstractController
         }
     }
 
-    
+
     #[Route('/users', name: 'app_users', methods: 'GET')]
     public function getUsers(
         CheckProfileRequest $checkProfileRequest,
@@ -63,8 +63,7 @@ class UserController extends AbstractController
             $userService->setEncoder($jwtEncoder);
             $users = $userService->getUsers($checkProfileRequest);
 
-            return $this->json( $users, 200);
-
+            return $this->json($users, 200);
         } catch (BadRequestException $e) {
             return $this->json(['msg' => $e->getMessage()], $e->getCode());
         }
@@ -78,7 +77,6 @@ class UserController extends AbstractController
         KernelInterface $kernel
     ): JsonResponse {
         try {
-
             $userService->setEncoder($jwtEncoder);
             $userService->setFileUploader($kernel);
 

@@ -14,9 +14,9 @@ class Post
     #[ORM\ManyToOne(targetEntity: "App\Entity\User", inversedBy: "posts")]
     private ?User $user;
 
-    #[ORM\ManyToMany(targetEntity: "App\Entity\Tag", inversedBy: "posts")]
+    #[ORM\ManyToMany(targetEntity: "App\Entity\Tag", inversedBy: "posts", fetch: "EAGER")]
     #[ORM\JoinTable(name: "post_tags")]
-    private ?Collection $tags;
+    private Collection $tags;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -149,7 +149,7 @@ class Post
         return $this;
     }
 
-        public function getTags(): \Doctrine\Common\Collections\Collection
+    public function getTags(): Collection
     {
         return $this->tags;
     }
