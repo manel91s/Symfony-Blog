@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Entity\Post;
 use App\Http\DTO\CheckProfileRequest;
+use App\Http\DTO\DeletePostRequest;
 use App\Http\DTO\PostRequest;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class PostService
 {
     private PostRepository $postRepository;
+   
     private UserService $userService;
     private TagService $tagService;
     private $projectDir;
@@ -46,11 +48,15 @@ class PostService
             throw new BadRequestException("Este email no está registrado", Response::HTTP_CONFLICT);
         }
 
-        $tags = $this->tagService->getTagObjects($request->getTags());
-        if (!$tags) {
-            throw new BadRequestException("No se han encontrado los tags", Response::HTTP_NOT_FOUND);
+        $idTags = $request->getTags();
+        $tags = [];
+        foreach($idTags as $idTag) {
+            if(!$tagObject = $this->tagService->get(intval($idTag))) {
+                throw new BadRequestException("El tag no existe", Response::HTTP_CONFLICT);
+            }
+            $tags[] = $tagObject;
         }
-
+        
         $post = new Post(
             $request->getTitle(),
             $request->getBody(),
@@ -102,7 +108,7 @@ class PostService
         $this->postRepository->save($post, true);
     }
 
-    public function delete(PostRequest $request): void
+    public function delete(DeletePostRequest $request): void
     {
         $bearerToken = $this->jwtService->getTokenFromRequest($request);
         $payload = $this->jwtService->decodeToken($bearerToken);

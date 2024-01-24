@@ -80,6 +80,22 @@ class PostController extends AbstractController
 
     #[Route('/posts/user', name: 'app_post', methods: 'GET')]
     public function getUserPosts(CheckProfileRequest $request, PostService $postService): JsonResponse
+<<<<<<< HEAD
+=======
+    {
+        try {
+
+            $posts = $postService->getUserPosts($request);
+
+            return $this->json($posts, 200);
+        } catch (BadRequestException $e) {
+            return $this->json(['msg' => "No hay publicaciones"], $e->getCode());
+        }
+    }
+
+    #[Route('/posts/{id}', name: 'app_post_id', methods: 'GET')]
+    public function getPost(PostRequest $request, PostService $postService): JsonResponse
+>>>>>>> 9319cf7c2f4bae067dc306b6f8d11c5900a019aa
     {
         try {
 
