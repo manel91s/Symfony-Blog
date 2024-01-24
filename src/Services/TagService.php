@@ -48,16 +48,12 @@ class TagService
 
     public function getTagObjects(array $idTags): array
     {
-<<<<<<< HEAD
         $tags = [];
         foreach ($idTags as $idTag) {
             $tags[] = $this->tagRepository->find($idTag);
         }
 
         return $tags;
-=======
-        return $this->tagRepository->find($id);
->>>>>>> 9319cf7c2f4bae067dc306b6f8d11c5900a019aa
     }
 
 
